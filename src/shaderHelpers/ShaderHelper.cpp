@@ -18,8 +18,8 @@ int32_t ShaderHelper::reloadFromPath(const std::string& vertPath, const std::str
 void ShaderHelper::handleNotFound(const char* location)
 {
     fprintf(stderr, "Uniform '%s', has not been found in bound shader: {%d}\n", location, activeShaderId_);
+    // exit(1); /* Exit immediately and fix the location error */
 }
-
 
 void ShaderHelper::setInt(const char* location, int value)
 {
@@ -33,6 +33,20 @@ void ShaderHelper::setIntVec(const char* location, uint32_t amount, int* values)
     int loc = glGetUniformLocation(activeShaderId_, location);
     if (loc == -1) return handleNotFound(location);
     glUniform1iv(loc, amount, values);
+}
+
+void ShaderHelper::setVec1f(const char* location, float value)
+{
+    int loc = glGetUniformLocation(activeShaderId_, location);
+    if (loc == -1) return handleNotFound(location);
+    glUniform1f(loc, value);
+}
+
+void ShaderHelper::setVec2f(const char* location, glm::vec2 value)
+{
+    int loc = glGetUniformLocation(activeShaderId_, location);
+    if (loc == -1) return handleNotFound(location);
+    glUniform2f(loc, value.x, value.y);
 }
 
 void ShaderHelper::setVec3f(const char* location, glm::vec3 value)

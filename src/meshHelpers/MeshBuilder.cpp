@@ -23,13 +23,18 @@ uint32_t MeshBuilder::generateWith(const std::vector<float>& verts, const std::v
     glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(uint32_t) * indices.size(), &indices[0], GL_STATIC_DRAW);
 
     uint32_t totalVertexLen = std::accumulate(layout.begin(), layout.end(), 0);
-    int32_t* currentOffset = 0;
+    int32_t currentOffset = 0;
     for (uint32_t i = 0; i < layout.size(); i++)
     {
-        //               attrId  attrLenBytes attrType bNorm               vertexLen              offesetToAttr
-        glVertexAttribPointer(i, layout[i], GL_FLOAT, GL_FALSE, totalVertexLen * sizeof(float), (void*)currentOffset);
+        glVertexAttribPointer(
+            i,                                       // attribId
+            layout[i],                               // attrLenBytes
+            GL_FLOAT,                                // attrType
+            GL_FALSE,                                // bNorm
+            totalVertexLen * sizeof(float),          // vertexLen
+            reinterpret_cast<void*>(currentOffset)); // vertexAttrOffset
         glEnableVertexAttribArray(i);
-        currentOffset += sizeof(float) * layout[i];
+        currentOffset += layout[i] * sizeof(float);
     }
     return vaoId;
 }

@@ -1,16 +1,16 @@
 #version 330 core
 
 layout (location = 0) in vec3 vPos;
+layout (location = 1) in vec2 vTex;
 
-uniform vec4 color;
-// uniform mat4 model;
-// uniform mat4 proj;
+uniform mat4 modelMatrix;
+uniform mat4 projMatrix;
 
-out vec4 colorOut;
+out vec2 texOut;
 
 void main()
 {
-    colorOut = color;
-    // gl_Position = proj * model * vec4(vPos.xyz, 1.0);
-    gl_Position = vec4(vPos.xyz, 1.0);
+    texOut = vTex;
+    // texOut = projMatrix * modelMatrix * vec4(vTex.xy, 0.0f, 0.0f);
+    gl_Position = projMatrix * modelMatrix * vec4(vPos.xyz, 1.0);
 }
