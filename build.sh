@@ -1,4 +1,5 @@
 #!/bin/sh
-cmake -B simpleUI -GNinja .
-cmake --build simpleUI
-./debug/simpleUI
+cmake -B build -GNinja . # generate ninja data
+cmake --build build      # link and compile
+mv debug/simpleUI .      # move out of debug folder
+./simpleUI               # run at root level

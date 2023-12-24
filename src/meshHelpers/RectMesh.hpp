@@ -4,6 +4,8 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 
+#include "../shaderHelpers/Types.hpp"
+
 namespace meshHelpers
 {
 class RectMesh
@@ -16,12 +18,13 @@ class RectMesh
     };
 
 public:
-    RectMesh(const int32_t shaderId, const uint32_t vaoId);
+    RectMesh(const shaderHelpers::shaderIdPtr shaderIdPtr, const uint32_t vaoId);
     glm::mat4 getTransform();
+    inline shaderHelpers::shaderId getShaderId() const;
 public:
     // private:
-    BoxModel box_;
-    int32_t shaderId_{ 0 };
-    uint32_t vaoId_{ 0 };
+    BoxModel gBox;
+    shaderHelpers::shaderIdPtr gShaderIdPtr{ nullptr };
+    uint32_t gVaoId{ 0 };
 };
 }

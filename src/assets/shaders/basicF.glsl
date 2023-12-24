@@ -8,10 +8,10 @@ in vec2 texOut;
 
 void main()
 {
-   // float ar = res.y / res.x;
+   float ar = res.x / res.y;
 
    vec2 tex = texOut;
-   // tex.x *= ar;
+   tex.x *= ar;
    tex.y = 1.0f - tex.y;
    tex = tex*10;
 

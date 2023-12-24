@@ -4,9 +4,9 @@
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
 
-#include "shaderHelpers/ShaderHelper.hpp"
-#include "meshHelpers/MeshBuilder.hpp"
-#include "meshHelpers/RectMesh.hpp"
+#include "src/shaderHelpers/ShaderHelper.hpp"
+#include "src/meshHelpers/MeshBuilder.hpp"
+#include "src/meshHelpers/RectMesh.hpp"
 
 bool shouldReload = false;
 
@@ -18,7 +18,7 @@ void keyCallback(GLFWwindow* window, int key, int scancode, int action, int mods
     }
 }
 
-int main()
+int main(int argc, char* argv[])
 {
     constexpr int32_t windowWidth = 1280;
     constexpr int32_t windowHeight = 720;
@@ -60,7 +60,7 @@ int main()
     std::string fragPath{ "src/assets/shaders/basicF.glsl" };
 
     shaderHelpers::ShaderHelper shaderHelper_;
-    int32_t shaderId = shaderHelper_.loadFromPath(vertPath, fragPath);
+    shaderHelpers::shaderIdPtr shaderPtr = shaderHelper_.loadFromPath(vertPath, fragPath);
 
     meshHelpers::MeshBuilder meshBuilders_;
 
@@ -70,11 +70,6 @@ int main()
         1.0f, 0.0f, 0.0f, 1.0f, 0.0f,
         0.0f, 0.0f, 0.0f, 0.0f, 0.0f,
         0.0f, 1.0f, 0.0f, 0.0f, 1.0f
-
-        // 0.5f,  0.5f, 0.0f, 1.0f, 1.0f,
-        // 0.5f, -0.5f, 0.0f, 1.0f, 0.0f,
-    //    -0.5f, -0.5f, 0.0f, 0.0f, 0.0f,
-    //    -0.5f,  0.5f, 0.0f, 0.0f, 1.0f
     };
 
     std::vector<uint32_t> indices = {
@@ -86,33 +81,32 @@ int main()
 
     uint32_t vaoId = meshBuilders_.generateWith(vertices, indices, layout);
 
-    meshHelpers::RectMesh rectMesh_{ shaderId, vaoId };
-    rectMesh_.box_.scale.x = 600;
-    rectMesh_.box_.scale.y = 600;
-    rectMesh_.box_.pos.x = 0; windowWidth / 2 - rectMesh_.box_.scale.x / 2;
-    rectMesh_.box_.pos.y = 0; windowHeight / 2 - rectMesh_.box_.scale.y / 2;
+    meshHelpers::RectMesh rectMesh_{ shaderPtr , vaoId };
+    rectMesh_.gBox.scale.x = 1280;
+    rectMesh_.gBox.scale.y = 720;
+    rectMesh_.gBox.pos.x = 0; windowWidth / 2 - rectMesh_.gBox.scale.x / 2;
+    rectMesh_.gBox.pos.y = 0; windowHeight / 2 - rectMesh_.gBox.scale.y / 2;
 
-    shaderHelper_.setActiveShaderId(rectMesh_.shaderId_);
+    shaderHelper_.setActiveShaderId(*rectMesh_.gShaderIdPtr);
 
-    glBindVertexArray(rectMesh_.vaoId_);
+    glBindVertexArray(rectMesh_.gVaoId);
 
     glm::mat4 projMatrix = glm::ortho(0.0f, (float)windowWidth, (float)windowHeight,
         0.0f, 0.0f, 100.0f);
 
     shaderHelper_.setMatrix4("projMatrix", projMatrix);
     shaderHelper_.setMatrix4("modelMatrix", rectMesh_.getTransform());
-    shaderHelper_.setVec3f("res", rectMesh_.box_.scale);
+    shaderHelper_.setVec3f("res", rectMesh_.gBox.scale);
 
     while (!glfwWindowShouldClose(window))
     {
         if (shouldReload)
         {
             printf("Should reload now..\n");
-            shaderId = shaderHelper_.loadFromPath(vertPath, fragPath);
-            rectMesh_.shaderId_ = shaderId;
-            shaderHelper_.setActiveShaderId(shaderId);
+            shaderHelper_.reloadFromPath(vertPath, fragPath);
+            shaderHelper_.setActiveShaderId(*rectMesh_.gShaderIdPtr);
             shaderHelper_.setMatrix4("projMatrix", projMatrix);
-            shaderHelper_.setVec3f("res", rectMesh_.box_.scale);
+            shaderHelper_.setVec3f("res", rectMesh_.gBox.scale);
 
             shouldReload = false;
         }

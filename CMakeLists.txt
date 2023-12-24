@@ -12,15 +12,10 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/../debug)
 # include_directories ("/usr/include/freetype2") # linux specific
 
 add_executable(${PROJECT_NAME}
-    src/main.cpp
+    main.cpp
 )
-
 
 add_subdirectory(src/shaderHelpers)
 add_subdirectory(src/meshHelpers)
-# add_subdirectory(elements)
-# add_subdirectory(management)
-# add_subdirectory(contexts)
-# add_subdirectory(renderer)
-# add_subdirectory(utils)
+
 target_link_libraries(${PROJECT_NAME} glfw GLEW GL X11 pthread Xrandr dl freetype)
