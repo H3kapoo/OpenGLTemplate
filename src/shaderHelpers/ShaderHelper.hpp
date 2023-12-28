@@ -16,6 +16,9 @@
 namespace shaderHelpers
 {
 
+/* Enable or disable shader prints regarding uniforms not found */
+#define UNIFORMS_DEBUG_PRINT 0
+
 /**
  * @brief Singleton providing shader load/reload and uniform access capabilities.
  *
@@ -25,7 +28,7 @@ namespace shaderHelpers
 class ShaderHelper
 {
 public:
-    ~ShaderHelper();
+    static ShaderHelper& get();
 
     /* Setters */
     shaderIdPtr loadFromPath(const std::string& vertPath, const std::string& fragPath);
@@ -47,13 +50,20 @@ public:
     shaderId getActiveShaderId() const;
 
 private:
-    /* In case a lot of objects use the same shader, it's pointless to allocate memory for each SAME shader.
-       We can reference the same one, just changing uniforms as needed. */
-    std::map<std::string, int32_t*> gShaderPathToGenId;
+    ShaderHelper() = default;
+    ~ShaderHelper();
+
+    /* Private copy and assignment ctor to prevent duplicates */
+    ShaderHelper(const ShaderHelper&) = delete;
+    ShaderHelper& operator=(const ShaderHelper&) = delete;
 
     void handleNotFound(const char* location);
     int linkShaders(int vertShaderId, int fragShaderId);
     int compileShader(const std::string& sourcePath, int32_t shaderType);
+
+    /* In case a lot of objects use the same shader, it's pointless to allocate memory for each SAME shader.
+       We can reference the same one, just changing uniforms as needed. */
+    std::map<std::string, int32_t*> gShaderPathToGenId;
 
     shaderId gActiveShaderId{ 0 };
 };

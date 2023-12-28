@@ -13,9 +13,13 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/../debug)
 
 add_executable(${PROJECT_NAME}
     main.cpp
+    src/Application.cpp
 )
 
 add_subdirectory(src/shaderHelpers)
 add_subdirectory(src/meshHelpers)
+add_subdirectory(src/renderHelpers)
+add_subdirectory(src/inputHelpers)
+add_subdirectory(src/treeHelpers)
 
 target_link_libraries(${PROJECT_NAME} glfw GLEW GL X11 pthread Xrandr dl freetype)

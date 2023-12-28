@@ -1,27 +1,20 @@
 #include <stdio.h>
-#include <vector>
+#include <functional>
 
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
 
-#include "src/shaderHelpers/ShaderHelper.hpp"
-#include "src/meshHelpers/MeshBuilder.hpp"
-#include "src/meshHelpers/RectMesh.hpp"
-
-bool shouldReload = false;
-
-void keyCallback(GLFWwindow* window, int key, int scancode, int action, int mods)
-{
-    if (key == GLFW_KEY_R && action == GLFW_PRESS)
-    {
-        shouldReload = true;
-    }
-}
+#include "src/inputHelpers/InputHelper.hpp"
+#include "src/Application.hpp"
 
 int main(int argc, char* argv[])
 {
-    constexpr int32_t windowWidth = 1280;
-    constexpr int32_t windowHeight = 720;
+    const int32_t windowWidth = 1280;
+    const int32_t windowHeight = 720;
+    const int32_t minWidth = 800;
+    const int32_t minHeight = 600;
+    const int32_t maxWidth = 1920;
+    const int32_t maxHeight = 1080;
 
     /* Init glfw */
     if (GLFW_FALSE == glfwInit())
@@ -53,75 +46,39 @@ int main(int argc, char* argv[])
         return false;
     }
 
-    /* Set key callback */
-    glfwSetKeyCallback(window, keyCallback);
+    glfwSetWindowSizeLimits(window, minWidth, minHeight, maxWidth, maxHeight);
 
-    std::string vertPath{ "src/assets/shaders/basicV.glsl" };
-    std::string fragPath{ "src/assets/shaders/basicF.glsl" };
+    Application app(window);
+    app.setup();
 
-    shaderHelpers::ShaderHelper shaderHelper_;
-    shaderHelpers::shaderIdPtr shaderPtr = shaderHelper_.loadFromPath(vertPath, fragPath);
+    inputHelpers::InputHelper& inHelper = inputHelpers::InputHelper::get();
+    inHelper.observe(window);
+    inHelper.registerOnKeyAction(std::bind(&Application::onKeyPress, &app,
+        std::placeholders::_1,
+        std::placeholders::_2,
+        std::placeholders::_3,
+        std::placeholders::_4));
 
-    meshHelpers::MeshBuilder meshBuilders_;
+    inHelper.registerOnWindowResizeAction(std::bind(&Application::onWindowResize, &app,
+        std::placeholders::_1,
+        std::placeholders::_2));
 
-    std::vector<float> vertices = {
-        // POS 3F         TEX 2F
-        1.0f, 1.0f, 0.0f, 1.0f, 1.0f,
-        1.0f, 0.0f, 0.0f, 1.0f, 0.0f,
-        0.0f, 0.0f, 0.0f, 0.0f, 0.0f,
-        0.0f, 1.0f, 0.0f, 0.0f, 1.0f
-    };
+    inHelper.registerOnMouseButtonAction(std::bind(&Application::onButtonAction, &app,
+        std::placeholders::_1,
+        std::placeholders::_2,
+        std::placeholders::_3));
 
-    std::vector<uint32_t> indices = {
-        0, 1, 3,
-        1, 2, 3
-    };
+    inHelper.registerOnMouseMoveAction(std::bind(&Application::onMouseMoveAction, &app,
+        std::placeholders::_1,
+        std::placeholders::_2));
 
-    std::vector<uint32_t> layout = { 3,2 };
-
-    uint32_t vaoId = meshBuilders_.generateWith(vertices, indices, layout);
-
-    meshHelpers::RectMesh rectMesh_{ shaderPtr , vaoId };
-    rectMesh_.gBox.scale.x = 1280;
-    rectMesh_.gBox.scale.y = 720;
-    rectMesh_.gBox.pos.x = 0; windowWidth / 2 - rectMesh_.gBox.scale.x / 2;
-    rectMesh_.gBox.pos.y = 0; windowHeight / 2 - rectMesh_.gBox.scale.y / 2;
-
-    shaderHelper_.setActiveShaderId(*rectMesh_.gShaderIdPtr);
-
-    glBindVertexArray(rectMesh_.gVaoId);
-
-    glm::mat4 projMatrix = glm::ortho(0.0f, (float)windowWidth, (float)windowHeight,
-        0.0f, 0.0f, 100.0f);
-
-    shaderHelper_.setMatrix4("projMatrix", projMatrix);
-    shaderHelper_.setMatrix4("modelMatrix", rectMesh_.getTransform());
-    shaderHelper_.setVec3f("res", rectMesh_.gBox.scale);
+    glEnable(GL_DEPTH_TEST);
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
     while (!glfwWindowShouldClose(window))
     {
-        if (shouldReload)
-        {
-            printf("Should reload now..\n");
-            shaderHelper_.reloadFromPath(vertPath, fragPath);
-            shaderHelper_.setActiveShaderId(*rectMesh_.gShaderIdPtr);
-            shaderHelper_.setMatrix4("projMatrix", projMatrix);
-            shaderHelper_.setVec3f("res", rectMesh_.gBox.scale);
-
-            shouldReload = false;
-        }
-
-        glClearColor(.3f, 0.2f, 0.4f, 1.0f);
-        glClear(GL_COLOR_BUFFER_BIT);
-
-        const double ampl = 10.0f;
-        const double freq = 1.0f;
-        const double sinTime = ampl * std::sin(glfwGetTime() * freq);
-
-        shaderHelper_.setMatrix4("modelMatrix", rectMesh_.getTransform());
-        shaderHelper_.setVec1f("uTime", glfwGetTime());
-        glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
-
+        app.loop();
         glfwSwapBuffers(window);
         glfwPollEvents();
     }

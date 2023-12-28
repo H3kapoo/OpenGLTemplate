@@ -4,6 +4,18 @@ namespace shaderHelpers
 {
 
 /**
+ * @brief Get class instance.
+ *
+ * @return A reference to the class instance.
+ */
+ShaderHelper& ShaderHelper::get()
+{
+    static ShaderHelper instance;
+    return instance;
+}
+
+
+/**
  * @brief Deallocate cached shader pointers at end of life.
  *
  */
@@ -67,7 +79,10 @@ void ShaderHelper::reloadFromPath(const std::string& vertPath, const std::string
         compileShader(fragPath, GL_FRAGMENT_SHADER));
     if (newId != -1)
     {
-        *gShaderPathToGenId[vertPath + fragPath] = newId;
+        //TODO: Assert there is actually something cached!!
+        const std::string combinedPath{ vertPath + fragPath };
+        assert(gShaderPathToGenId[combinedPath] != nullptr && "Tried to reload shader that wasn't loaded before!");
+        *gShaderPathToGenId[combinedPath] = newId;
         return;
     }
 }
@@ -92,8 +107,8 @@ void ShaderHelper::setInt(const char* location, int value)
 /**
  * @brief Load integer vector uniform to currently active shader **Id**.
  *
- * @param location Location of uniform to be set in the shader.
- * @param amount   Amount of values to be set.
+ * @param location     Location of uniform to be set in the shader.
+ * @param amount       Amount of values to be set.
  * @param flatValues   Array of values to be set.
  *
  * @return Doesn't return anything.
@@ -307,16 +322,17 @@ int ShaderHelper::compileShader(const std::string& sourcePath, int32_t shaderTyp
     return shaderPart;
 }
 
-
 /**
  * @brief Simply print uniform not found
  *
  * @return Nothing.
  */
+#if UNIFORMS_DEBUG_PRINT
 void ShaderHelper::handleNotFound(const char* location)
 {
-    fprintf(stderr, "Uniform '%s', has not been found in bound shader: {%d}\n", location, gActiveShaderId);
-    // exit(1); /* Exit immediately and fix the location error */
+    fprintf(stderr, "Uniform '%s' has not been found in bound shader: {%d}\n", location, gActiveShaderId);
 }
-
+#else
+void ShaderHelper::handleNotFound(const char* location) {}
+#endif
 }
