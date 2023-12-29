@@ -4,11 +4,17 @@
 
 namespace treeHelpers
 {
+TreeStruct::TreeStruct()
+    : gId{ generateId() } {}
+
+TreeStruct::~TreeStruct()
+{
+    if (gFast) { delete gFast; }
+}
 
 void TreeStruct::append(RectNodeABC* node)
 {
     node->gTreeStruct.setLevel(gLevel + 1);
-    node->gMesh.gBox.pos.z = gLevel + 1;
     gChildren.push_back(node);
 }
 
@@ -25,7 +31,15 @@ void TreeStruct::findDeep(const RectNodeABC* node)
 {
 }
 
-void TreeStruct::setParent(RectNodeABC* node) { gParent = node; }
+void TreeStruct::setParent(RectNodeABC* node)
+{
+    gParent = node;
+}
+
+bool TreeStruct::isRootNode() const
+{
+    return gLevel == 1 && gParent == nullptr;
+}
 
 treeNodeId TreeStruct::getId() const
 {
@@ -45,6 +59,11 @@ const std::vector<RectNodeABC*> TreeStruct::getChildren() const
 void TreeStruct::setLevel(const treeNodeLevel level)
 {
     gLevel = level;
+}
+
+void TreeStruct::enableFastTreeSearch()
+{
+    gFast = new FastTreeSort();
 }
 
 }

@@ -11,7 +11,7 @@
 
 class GLFWwindow; /* Fwd declare to avoid include errors */
 
-class Application
+class Application /* This shall later inherit from IApplication for better reusability */
 {
 public:
     Application(GLFWwindow* windowHandle);
@@ -23,6 +23,9 @@ public:
     void onMouseMoveAction(double xPos, double yPos);
 
 private:
+    void keepRatio();
+    void setTitle(const std::string& title);
+
     /* Basic shader */
     std::string gVertPath{ "src/assets/shaders/basicV.glsl" };
     std::string gFragPath{ "src/assets/shaders/basicF.glsl" };

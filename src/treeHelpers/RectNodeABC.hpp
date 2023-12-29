@@ -10,30 +10,38 @@
 
 namespace treeHelpers
 {
-// #define CHILD_WILL_IMPLEMENT(x) virtual void x ()
-// #define IMPL_FROM_PARENT(x) void x () override
+#define CHILD_WILL_IMPLEMENT(x) virtual void x () {}
+#define IMPL_OF_PARENT(x) void x () override
 
+/**
+ * @brief Abstract base class representing rectangle node.
+ *
+ * Class used to be inherited from to create new types of nodes sharing
+ * basic event/structure functionality.
+ *
+ */
 class RectNodeABC
 {
 public:
     RectNodeABC(const std::string& vertPath, const std::string& fragPath);
 
+    void append(RectNodeABC* child);
+
     void setStateSource(stateHelpers::WindowState* state);
 
-    void emitEvent(const inputHelpers::Event evt);
-    void scanTree();
-
-    virtual void onMouseButton() {}
-    // CHILD_WILL_IMPLEMENT(onMouseButton);
+    void emitEvent(const inputHelpers::Event& evt);
 
     TreeStruct gTreeStruct;
 
-private:
-    /* Basic shader */
-    std::string gVertPath{ "src/assets/shaders/basicV.glsl" };
-    std::string gFragPath{ "src/assets/shaders/basicF.glsl" };
+protected:
+    CHILD_WILL_IMPLEMENT(onMouseButton);
+    CHILD_WILL_IMPLEMENT(onMouseHover);
 
-    stateHelpers::WindowState* gStatePtr;
+    stateHelpers::WindowState* gStatePtr{ nullptr };
+private:
+    void searchForMouseSelection();
+    void searchForMouseHover();
+
 public:
     /* Basic mesh */
     meshHelpers::RectMesh gMesh;

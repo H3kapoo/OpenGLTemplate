@@ -9,10 +9,11 @@
 
 int main(int argc, char* argv[])
 {
-    const int32_t windowWidth = 1280;
-    const int32_t windowHeight = 720;
-    const int32_t minWidth = 800;
-    const int32_t minHeight = 600;
+    const int32_t windowWidth = 500;
+    const int32_t windowHeight = 400;
+
+    const int32_t minWidth = 500;
+    const int32_t minHeight = 400;
     const int32_t maxWidth = 1920;
     const int32_t maxHeight = 1080;
 
@@ -80,6 +81,7 @@ int main(int argc, char* argv[])
     {
         app.loop();
         glfwSwapBuffers(window);
+        // glfwWaitEvents();
         glfwPollEvents();
     }
 
