@@ -3,7 +3,6 @@
 #include <vector>
 
 #include "Types.hpp"
-#include "FastTreeSort.hpp"
 
 namespace treeHelpers
 {
@@ -28,12 +27,12 @@ public:
     void setParent(RectNodeABC* node);
 
     bool isRootNode() const;
+
     treeNodeId getId() const;
     treeNodeLevel getLevel() const;
     const std::vector<RectNodeABC*> getChildren() const;
 
     void setLevel(const treeNodeLevel level);
-    void enableFastTreeSearch();
 
 private:
     static uint32_t generateId()
@@ -42,13 +41,12 @@ private:
         return currentId++;
     }
 
+    //TODO: Make sure we cannot parent to ourselves and also make sure that
+    // if the node is already parented, we cannot parent it to another node again
     treeNodeId gId;
     treeNodeLevel gLevel{ 1 };
     RectNodeABC* gParent{ nullptr };
     std::vector<RectNodeABC*> gChildren;
-
-    FastTreeSort* gFast;
-
 };
 
 }

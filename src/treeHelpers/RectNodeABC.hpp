@@ -4,7 +4,9 @@
 
 #include "TreeStruct.hpp"
 #include "Types.hpp"
+#include "FastTreeSort.hpp"
 #include "../meshHelpers/RectMesh.hpp"
+#include "../meshHelpers/MeshStyle.hpp"
 #include "../inputHelpers/Types.hpp"
 #include "../stateHelpers/WindowState.hpp"
 
@@ -24,6 +26,10 @@ class RectNodeABC
 {
 public:
     RectNodeABC(const std::string& vertPath, const std::string& fragPath);
+    virtual ~RectNodeABC();
+
+    void enableFastTreeSort();
+    void updateFastTree();
 
     void append(RectNodeABC* child);
 
@@ -42,8 +48,10 @@ private:
     void searchForMouseSelection();
     void searchForMouseHover();
 
+    FastTreeSort* gFastTreeSortPtr{ nullptr };
 public:
     /* Basic mesh */
     meshHelpers::RectMesh gMesh;
+    meshHelpers::MeshStyle gStyle;
 };
 }

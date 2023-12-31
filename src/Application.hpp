@@ -30,9 +30,14 @@ private:
     std::string gVertPath{ "src/assets/shaders/basicV.glsl" };
     std::string gFragPath{ "src/assets/shaders/basicF.glsl" };
 
+    std::string gBorderedVertPath{ "src/assets/shaders/borderedV.glsl" };
+    std::string gBorderedFragPath{ "src/assets/shaders/borderedF.glsl" };
+
     /* Basic mesh */
-    treeHelpers::ConcreteNode gRootConcreteNode{ gVertPath, gFragPath };
-    treeHelpers::ConcreteNode gChildNode{ gVertPath, gFragPath };
+    treeHelpers::ConcreteNode gRootConcreteNode{ gBorderedVertPath, gBorderedFragPath };
+    treeHelpers::ConcreteNode gFpNode{ gBorderedVertPath, gBorderedFragPath };
+    treeHelpers::ConcreteNode gStatusNode{ gBorderedVertPath, gBorderedFragPath };
+    treeHelpers::ConcreteNode gExtractNode{ gBorderedVertPath, gBorderedFragPath };
 
     stateHelpers::WindowState gWindowState;
 

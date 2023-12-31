@@ -32,13 +32,20 @@ void RenderHelper::setProjectionMatrix(const glm::mat4& projMatrix)
  *
  * @param mesh - Rectangle mesh to be rendered.
  */
-void RenderHelper::renderRectMesh(meshHelpers::RectMesh& mesh)
+void RenderHelper::renderRectMesh(meshHelpers::RectMesh& mesh, meshHelpers::MeshStyle& style)
 {
     gShInstance.setActiveShaderId(mesh.getShaderId());
-    gShInstance.setMatrix4("projMatrix", gProjectionMat);
-    gShInstance.setMatrix4("modelMatrix", mesh.getTransform());
-    gShInstance.setVec4f("color", mesh.gColor);
-    // gShInstance.setVec3f("res", mesh.gBox.scale);
+    gShInstance.setVec3f("uResolution", mesh.gBox.scale);
+
+    gShInstance.setMatrix4("uProjMatrix", gProjectionMat);
+    gShInstance.setMatrix4("uModelMatrix", mesh.getTransform());
+
+    gShInstance.setVec4f("uInnerColor", mesh.gColor);
+    gShInstance.setVec4f("uBorderColor", style.gBorderColor);
+
+    // gShInstance.setVec4f("uInnerColor", glm::vec4(0.5f, 0.5f, 0.5f, 1.0f));
+    // gShInstance.setVec4f("uBorderColor", glm::vec4(0.5f, 0.0f, 0.0f, 1.0f));
+    gShInstance.setVec4f("uBorderSize", style.gBorderSize);
 
     glBindVertexArray(mesh.getVaoId());
     glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);

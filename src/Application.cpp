@@ -2,37 +2,48 @@
 
 #include <GLFW/glfw3.h>
 
+#include "utils/CommonUtils.hpp"
+
 Application::Application(GLFWwindow* windowHandle)
     : gWindowHandle{ windowHandle }
     , gShInstance{ shaderHelpers::ShaderHelper::get() }
     , gRenderInstance{ renderHelpers::RenderHelper::get() }
 {}
 
-
 void Application::keepRatio()
 {
     /* Root note */
-    auto& mesh = gRootConcreteNode.gMesh;
-    mesh.gBox.pos.x = 0;
-    mesh.gBox.pos.y = 0;
-    mesh.gBox.scale.x = gWindowState.winWidth;
-    mesh.gBox.scale.y = gWindowState.winHeight;
+    auto& rootMesh = gRootConcreteNode.gMesh;
+    rootMesh.gBox.pos.x = 0;
+    rootMesh.gBox.pos.y = 0;
+    rootMesh.gBox.scale.x = gWindowState.winWidth;
+    rootMesh.gBox.scale.y = gWindowState.winHeight;
+
+    const int32_t spacingPx = 5;
+    const float fpScale = 0.65f;
+    const float statusScale = 0.15f;
+    const float extractScale = 0.20f;
 
     /* 1st child of root */
-    const int32_t spacingPx = 20;
-    const float spaceFromBottomPct = 0.25f;
+    auto& fpMesh = gFpNode.gMesh;
+    fpMesh.gBox.pos.x = rootMesh.gBox.pos.x + spacingPx;
+    fpMesh.gBox.pos.y = rootMesh.gBox.pos.y + spacingPx;
+    fpMesh.gBox.scale.x = rootMesh.gBox.scale.x - spacingPx * 2;
+    fpMesh.gBox.scale.y = rootMesh.gBox.scale.y * fpScale - spacingPx;
 
-    auto& cMesh = gChildNode.gMesh;
-    cMesh.gBox.pos.x = mesh.gBox.pos.x + spacingPx;
-    cMesh.gBox.pos.y = (mesh.gBox.pos.y + mesh.gBox.scale.y) - mesh.gBox.scale.y * spaceFromBottomPct;
-    cMesh.gBox.scale.x = mesh.gBox.scale.x - spacingPx * 2;
-    cMesh.gBox.scale.y = mesh.gBox.scale.y * spaceFromBottomPct - spacingPx;
-}
+    /* 2nd child of root */
+    auto& statusMesh = gStatusNode.gMesh;
+    statusMesh.gBox.pos.x = fpMesh.gBox.pos.x;
+    statusMesh.gBox.pos.y = fpMesh.gBox.pos.y + fpMesh.gBox.scale.y + spacingPx;
+    statusMesh.gBox.scale.x = fpMesh.gBox.scale.x;
+    statusMesh.gBox.scale.y = rootMesh.gBox.scale.y * statusScale - spacingPx;
 
-void Application::setTitle(const std::string& title)
-{
-    /*This shall be abstracted by the window helpers eventually */
-    glfwSetWindowTitle(gWindowHandle, title.c_str());
+    // /* 3rd child of root */
+    auto& extractMesh = gExtractNode.gMesh;
+    extractMesh.gBox.pos.x = statusMesh.gBox.pos.x;
+    extractMesh.gBox.pos.y = statusMesh.gBox.pos.y + statusMesh.gBox.scale.y + spacingPx;
+    extractMesh.gBox.scale.x = statusMesh.gBox.scale.x;
+    extractMesh.gBox.scale.y = rootMesh.gBox.scale.y * extractScale - spacingPx * 2;
 }
 
 void Application::setup()
@@ -47,21 +58,33 @@ void Application::setup()
         0.0f, renderHelpers::RenderHelper::MAX_LAYERS, 0.0f);
     gRenderInstance.setProjectionMatrix(projMatrix);
 
-    gRootConcreteNode.gMesh.gColor.r = 1.0f;
-    gRootConcreteNode.gMesh.gColor.a = 1.0f;
+    gRootConcreteNode.gMesh.gColor = utils::hexToVec4("#6ebcb4");
 
-    gChildNode.gMesh.gColor.a = 1.0f;
-    gChildNode.gMesh.gColor.g = 1.0f;
+    gFpNode.gMesh.gColor = utils::hexToVec4("#16796F");
+    gFpNode.gStyle.gBorderSize = glm::vec4(4, 4, 4, 4);
+    gFpNode.gStyle.gBorderColor = utils::hexToVec4("#349798");
+
+    gStatusNode.gMesh.gColor = utils::hexToVec4("#16796F");
+    gStatusNode.gStyle.gBorderSize = glm::vec4(4, 4, 4, 4);
+    gStatusNode.gStyle.gBorderColor = utils::hexToVec4("#349798");
+
+    gExtractNode.gMesh.gColor = utils::hexToVec4("#16796F");
+    gExtractNode.gStyle.gBorderSize = glm::vec4(4, 4, 4, 4);
+    gExtractNode.gStyle.gBorderColor = utils::hexToVec4("#349798");
 
     keepRatio();
 
     /* Everything parented to root rectangle will share this one unique window data source*/
     gRootConcreteNode.setStateSource(&gWindowState);
 
-    gRootConcreteNode.gTreeStruct.enableFastTreeSearch();
-
     /* Push Child to root node */
-    gRootConcreteNode.append(&gChildNode);
+    gRootConcreteNode.append(&gFpNode);
+    gRootConcreteNode.append(&gExtractNode);
+    gRootConcreteNode.append(&gStatusNode);
+
+    /* Enable FTS for quicker click/mouse movement searches in the internal tree struct */
+    gRootConcreteNode.enableFastTreeSort();
+    gRootConcreteNode.updateFastTree();
 
     gRootConcreteNode.registerOnClick([](int, int x, int y)
         {
@@ -73,9 +96,23 @@ void Application::setup()
             printf("Release %d, %d !\n", x, y);
         });
 
+    gExtractNode.registerOnClick([this](int, int x, int y)
+        {
+            gExtractNode.gStyle.gBorderColor = utils::hexToVec4("#8dd9f0");
+            gExtractNode.gStyle.gBorderSize.x += 3;
+            gExtractNode.gStyle.gBorderSize.z += 3;
+        });
+
+    gExtractNode.registerOnRelease([this](int, int x, int y)
+        {
+            gExtractNode.gStyle.gBorderColor = utils::hexToVec4("#349798");
+            gExtractNode.gStyle.gBorderSize.x -= 3;
+            gExtractNode.gStyle.gBorderSize.z -= 3;
+        });
 
     printf("Root level is: %d and z: %f\n", gRootConcreteNode.gTreeStruct.getLevel(), gRootConcreteNode.gMesh.gBox.pos.z);
-    printf("Child level is: %d and z: %f\n", gChildNode.gTreeStruct.getLevel(), gChildNode.gMesh.gBox.pos.z);
+    printf("Top child level is: %d and z: %f\n", gFpNode.gTreeStruct.getLevel(), gFpNode.gMesh.gBox.pos.z);
+    printf("Bot border level is: %d and z: %f\n", gExtractNode.gTreeStruct.getLevel(), gExtractNode.gMesh.gBox.pos.z);
 }
 
 void Application::loop()
@@ -83,13 +120,23 @@ void Application::loop()
     if (gReloadShader)
     {
         printf("Should reload now..\n");
-        gShInstance.reloadFromPath(gVertPath, gFragPath);
+        gShInstance.reloadFromPath(gBorderedVertPath, gBorderedFragPath);
+        // gShInstance.reloadFromPath(gVertPath, gFragPath);
         gReloadShader = false;
     }
 
+    /* Render stuff, order independent (depends only on Z) */
     gRenderInstance.clearScreen();
-    gRenderInstance.renderRectMesh(gRootConcreteNode.gMesh);
-    gRenderInstance.renderRectMesh(gChildNode.gMesh);
+    gRenderInstance.renderRectMesh(gRootConcreteNode.gMesh, gRootConcreteNode.gStyle);
+    gRenderInstance.renderRectMesh(gFpNode.gMesh, gFpNode.gStyle);
+    gRenderInstance.renderRectMesh(gStatusNode.gMesh, gStatusNode.gStyle);
+    gRenderInstance.renderRectMesh(gExtractNode.gMesh, gExtractNode.gStyle);
+}
+
+void Application::setTitle(const std::string& title)
+{
+    /*This shall be abstracted by the window helpers eventually */
+    glfwSetWindowTitle(gWindowHandle, title.c_str());
 }
 
 /* -------------- Window event propagation zone --------------- */
@@ -103,7 +150,6 @@ void Application::onKeyPress(int key, int sc, int action, int mods)
 
 void Application::onWindowResize(int width, int height)
 {
-    // printf("Window resized to %dx%d\n", width, height);
     gWindowState.winWidth = width;
     gWindowState.winHeight = height;
 

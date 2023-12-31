@@ -9,7 +9,6 @@ TreeStruct::TreeStruct()
 
 TreeStruct::~TreeStruct()
 {
-    if (gFast) { delete gFast; }
 }
 
 void TreeStruct::append(RectNodeABC* node)
@@ -59,11 +58,6 @@ const std::vector<RectNodeABC*> TreeStruct::getChildren() const
 void TreeStruct::setLevel(const treeNodeLevel level)
 {
     gLevel = level;
-}
-
-void TreeStruct::enableFastTreeSearch()
-{
-    gFast = new FastTreeSort();
 }
 
 }

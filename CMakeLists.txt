@@ -21,5 +21,6 @@ add_subdirectory(src/meshHelpers)
 add_subdirectory(src/renderHelpers)
 add_subdirectory(src/inputHelpers)
 add_subdirectory(src/treeHelpers)
+add_subdirectory(src/textureHelpers)
 
 target_link_libraries(${PROJECT_NAME} glfw GLEW GL X11 pthread Xrandr dl freetype)

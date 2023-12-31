@@ -56,6 +56,8 @@ shaderIdPtr ShaderHelper::loadFromPath(const std::string& vertPath, const std::s
         compileShader(fragPath, GL_FRAGMENT_SHADER));
 
     gShaderPathToGenId[combinedPath] = newId;
+    printf("Loaded shader {%d}: %s + %s\n", *newId, vertPath.c_str(), fragPath.c_str());
+
     return newId;
 }
 
@@ -331,6 +333,7 @@ int ShaderHelper::compileShader(const std::string& sourcePath, int32_t shaderTyp
 void ShaderHelper::handleNotFound(const char* location)
 {
     fprintf(stderr, "Uniform '%s' has not been found in bound shader: {%d}\n", location, gActiveShaderId);
+    exit(1);
 }
 #else
 void ShaderHelper::handleNotFound(const char* location) {}

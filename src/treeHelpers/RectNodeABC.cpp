@@ -9,6 +9,41 @@ RectNodeABC::RectNodeABC(const std::string& vertPath, const std::string& fragPat
     : gMesh{ vertPath, fragPath }
 {}
 
+RectNodeABC::~RectNodeABC()
+{
+    if (gFastTreeSortPtr)
+    {
+        delete gFastTreeSortPtr;
+    }
+}
+
+void RectNodeABC::enableFastTreeSort()
+{
+    if (!gFastTreeSortPtr)
+    {
+        gFastTreeSortPtr = new FastTreeSort();
+        printf("FastTreeSort enabled for node with id: %d\n", gTreeStruct.getId());
+    }
+}
+
+
+void RectNodeABC::updateFastTree()
+{
+    if (gFastTreeSortPtr)
+    {
+        gFastTreeSortPtr->sortBuffer(this, [](const RectNodeABC* x, const RectNodeABC* y) -> bool
+            {
+                /* Sort so that vec is ordered by highest level first */
+                return x->gTreeStruct.getLevel() > y->gTreeStruct.getLevel();
+            });
+        printf("FastTree updated!\n");
+        return;
+    }
+
+    fprintf(stderr, "FastTreeSort is not enabled!\n");
+}
+
+
 /**
  * @brief Append new children to this node.
  *
@@ -79,37 +114,23 @@ void RectNodeABC::searchForMouseSelection()
         fprintf(stderr, "Window State pointer is not set for node with id: %d\n", gTreeStruct.getId()); exit(1);
     }
 
-    int mouseX = gStatePtr->mouseX;
-    int mouseY = gStatePtr->mouseY;
-    if ((mouseX > gMesh.gBox.pos.x) && (mouseX < gMesh.gBox.pos.x + gMesh.gBox.scale.x) &&
-        (mouseY > gMesh.gBox.pos.y) && (mouseY < gMesh.gBox.pos.y + gMesh.gBox.scale.y))
+    if (gTreeStruct.isRootNode() && gFastTreeSortPtr != nullptr)
     {
-        gStatePtr->selectedId = gTreeStruct.getId();
-    }
-
-    /* Ask child nodes (which should be higher in Z) if there's a hit.
-       Last hit node is the actually selected one. */
-    for (const auto& ch : gTreeStruct.getChildren())
-    {
-        ch->emitEvent(inputHelpers::Event::MouseButton);
-    }
-
-    /* Root will always have level 1. If root is the selected one, fire onMouseButton, otherwise
-       find selected node id in root's children. */
-    if (gTreeStruct.isRootNode())
-    {
-        if (gStatePtr->selectedId == gTreeStruct.getId())
+        int32_t x = 0;
+        for (const auto& c : gFastTreeSortPtr->getBuffer())
         {
-            onMouseButton();
-            return;
-        }
-
-        for (const auto& ch : gTreeStruct.getChildren())
-        {
-            if (gStatePtr->selectedId == ch->gTreeStruct.getId())
+            int mouseX = gStatePtr->mouseX;
+            int mouseY = gStatePtr->mouseY;
+            auto& mesh = c->gMesh;
+            if ((mouseX > mesh.gBox.pos.x) && (mouseX < mesh.gBox.pos.x + mesh.gBox.scale.x) &&
+                (mouseY > mesh.gBox.pos.y) && (mouseY < mesh.gBox.pos.y + mesh.gBox.scale.y))
             {
-                ch->onMouseButton();
+                gStatePtr->selectedId = c->gTreeStruct.getId();
+                // printf("%f Iter: %d Child clicked with level: %d\n", glfwGetTime(), x, c->gTreeStruct.getLevel());
+                c->onMouseButton();
+                break;
             }
+            x++;
         }
     }
 }
@@ -117,9 +138,30 @@ void RectNodeABC::searchForMouseSelection()
 
 void RectNodeABC::searchForMouseHover()
 {
-    if (gTreeStruct.isRootNode())
+    return; // For now only
+    if (!gStatePtr)
     {
+        fprintf(stderr, "Window State pointer is not set for node with id: %d\n", gTreeStruct.getId()); exit(1);
+    }
 
+    if (gTreeStruct.isRootNode() && gFastTreeSortPtr != nullptr)
+    {
+        // printf("Time: %f\n", glfwGetTime());
+        int32_t x = 0;
+        for (const auto& c : gFastTreeSortPtr->getBuffer())
+        {
+            int mouseX = gStatePtr->mouseX;
+            int mouseY = gStatePtr->mouseY;
+            auto& mesh = c->gMesh;
+            if ((mouseX > mesh.gBox.pos.x) && (mouseX < mesh.gBox.pos.x + mesh.gBox.scale.x) &&
+                (mouseY > mesh.gBox.pos.y) && (mouseY < mesh.gBox.pos.y + mesh.gBox.scale.y))
+            {
+                // gStatePtr->selectedId = gTreeStruct.getId();
+                printf("%f Iter: %d Child with level: %d\n", glfwGetTime(), x, c->gTreeStruct.getLevel());
+                break;
+            }
+            x++;
+        }
     }
 
 }
