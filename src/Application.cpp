@@ -8,6 +8,7 @@ Application::Application(GLFWwindow* windowHandle)
     : gWindowHandle{ windowHandle }
     , gShInstance{ shaderHelpers::ShaderHelper::get() }
     , gRenderInstance{ renderHelpers::RenderHelper::get() }
+    , gTexHelperInstance{ textureHelpers::TextureHelper::get() }
 {}
 
 void Application::keepRatio()
@@ -48,9 +49,9 @@ void Application::keepRatio()
 
 void Application::setup()
 {
+    printf("Setup called\n");
     setTitle("UnSnapshot C++ 1.0");
 
-    printf("Setup called\n");
     glfwGetWindowSize(gWindowHandle, &gWindowState.winWidth, &gWindowState.winHeight);
 
     /* Note: Highest Z renders in front of everything */
@@ -59,6 +60,9 @@ void Application::setup()
     gRenderInstance.setProjectionMatrix(projMatrix);
 
     gRootConcreteNode.gMesh.gColor = utils::hexToVec4("#6ebcb4");
+    gRootConcreteNode.gStyle.gBorderSize = glm::vec4(4, 4, 4, 4);
+    gRootConcreteNode.gStyle.gBorderColor = utils::hexToVec4("#349798");
+
 
     gFpNode.gMesh.gColor = utils::hexToVec4("#16796F");
     gFpNode.gStyle.gBorderSize = glm::vec4(4, 4, 4, 4);
@@ -71,6 +75,31 @@ void Application::setup()
     gExtractNode.gMesh.gColor = utils::hexToVec4("#16796F");
     gExtractNode.gStyle.gBorderSize = glm::vec4(4, 4, 4, 4);
     gExtractNode.gStyle.gBorderColor = utils::hexToVec4("#349798");
+
+    /* Uniform Watchers */
+    gRootConcreteNode.gMesh.gUniKeeper.watch("uInnerColor", &gRootConcreteNode.gMesh.gColor);
+    gRootConcreteNode.gMesh.gUniKeeper.watch("uResolution", &gRootConcreteNode.gMesh.gBox.scale);
+    gRootConcreteNode.gMesh.gUniKeeper.defaultVec4("uBorderColor");
+    gRootConcreteNode.gMesh.gUniKeeper.defaultVec4("uBorderSize");
+
+    gExtractNode.gMesh.gUniKeeper.watch("uInnerColor", &gExtractNode.gMesh.gColor);
+    gExtractNode.gMesh.gUniKeeper.watch("uBorderColor", &gExtractNode.gStyle.gBorderColor);
+    gExtractNode.gMesh.gUniKeeper.watch("uBorderSize", &gExtractNode.gStyle.gBorderSize);
+    gExtractNode.gMesh.gUniKeeper.watch("uResolution", &gExtractNode.gMesh.gBox.scale);
+
+    gStatusNode.gMesh.gUniKeeper.watch("uInnerColor", &gStatusNode.gMesh.gColor);
+    gStatusNode.gMesh.gUniKeeper.watch("uResolution", &gStatusNode.gMesh.gBox.scale);
+    gStatusNode.gMesh.gUniKeeper.defaultVec4("uBorderColor");
+    gStatusNode.gMesh.gUniKeeper.defaultVec4("uBorderSize");
+
+    gFpNode.gMesh.gUniKeeper.watch("uInnerColor", &gFpNode.gMesh.gColor);
+    gFpNode.gMesh.gUniKeeper.watch("uResolution", &gFpNode.gMesh.gBox.scale);
+    gFpNode.gMesh.gUniKeeper.defaultVec4("uBorderColor");
+    gFpNode.gMesh.gUniKeeper.defaultVec4("uBorderSize");
+
+    //TODO: not really hot?
+    gFpNode.gStyle.gTextureId = gTexHelperInstance.loadTexture("src/assets/textures/imeg.jpeg")->gId;
+    gFpNode.gMesh.gUniKeeper.watch("uTextureId", &gFpNode.gStyle.gTextureId);
 
     keepRatio();
 
@@ -96,18 +125,19 @@ void Application::setup()
             printf("Release %d, %d !\n", x, y);
         });
 
-    gExtractNode.registerOnClick([this](int, int x, int y)
+    const int32_t btnPushAmt = 3;
+    gExtractNode.registerOnClick([this, btnPushAmt](int, int x, int y)
         {
             gExtractNode.gStyle.gBorderColor = utils::hexToVec4("#8dd9f0");
-            gExtractNode.gStyle.gBorderSize.x += 3;
-            gExtractNode.gStyle.gBorderSize.z += 3;
+            gExtractNode.gStyle.gBorderSize.x += btnPushAmt;
+            gExtractNode.gStyle.gBorderSize.z += btnPushAmt;
         });
 
-    gExtractNode.registerOnRelease([this](int, int x, int y)
+    gExtractNode.registerOnRelease([this, btnPushAmt](int, int x, int y)
         {
             gExtractNode.gStyle.gBorderColor = utils::hexToVec4("#349798");
-            gExtractNode.gStyle.gBorderSize.x -= 3;
-            gExtractNode.gStyle.gBorderSize.z -= 3;
+            gExtractNode.gStyle.gBorderSize.x -= btnPushAmt;
+            gExtractNode.gStyle.gBorderSize.z -= btnPushAmt;
         });
 
     printf("Root level is: %d and z: %f\n", gRootConcreteNode.gTreeStruct.getLevel(), gRootConcreteNode.gMesh.gBox.pos.z);
@@ -121,16 +151,16 @@ void Application::loop()
     {
         printf("Should reload now..\n");
         gShInstance.reloadFromPath(gBorderedVertPath, gBorderedFragPath);
-        // gShInstance.reloadFromPath(gVertPath, gFragPath);
+        // gTexHelperInstance.reloadFromPath("src/assets/textures/container.jpg");
         gReloadShader = false;
     }
 
     /* Render stuff, order independent (depends only on Z) */
     gRenderInstance.clearScreen();
-    gRenderInstance.renderRectMesh(gRootConcreteNode.gMesh, gRootConcreteNode.gStyle);
-    gRenderInstance.renderRectMesh(gFpNode.gMesh, gFpNode.gStyle);
-    gRenderInstance.renderRectMesh(gStatusNode.gMesh, gStatusNode.gStyle);
-    gRenderInstance.renderRectMesh(gExtractNode.gMesh, gExtractNode.gStyle);
+    gRenderInstance.renderRectNode(gRootConcreteNode);
+    gRenderInstance.renderRectNode(gFpNode);
+    gRenderInstance.renderRectNode(gStatusNode);
+    gRenderInstance.renderRectNode(gExtractNode);
 }
 
 void Application::setTitle(const std::string& title)

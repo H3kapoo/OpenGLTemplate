@@ -6,6 +6,7 @@
 #include "../shaderHelpers/ShaderHelper.hpp"
 #include "../meshHelpers/RectMesh.hpp"
 #include "../meshHelpers/MeshStyle.hpp"
+#include "../treeHelpers/RectNodeABC.hpp"
 
 namespace renderHelpers
 {
@@ -21,7 +22,7 @@ public:
     static constexpr float MAX_LAYERS{ -100 };
 
     void setProjectionMatrix(const glm::mat4& projMatrix);
-    void renderRectMesh(meshHelpers::RectMesh& mesh, meshHelpers::MeshStyle& style);
+    void renderRectNode(treeHelpers::RectNodeABC& node);
     void clearScreen();
 
 private:

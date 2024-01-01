@@ -17,13 +17,14 @@ public:
 
 private:
     IMPL_OF_PARENT(onMouseButton);
+    IMPL_OF_PARENT(render);
 
     MouseClickCb gMouseClickCb{ nullptr };
     MouseClickWithSelfCb gMouseClickWithSelfCb{ nullptr };
     MouseReleaseCb gMouseReleaseCb{ nullptr };
 
     /* Basic shader */
-    std::string gVertPath{ "src/assets/shaders/basicV.glsl" };
-    std::string gFragPath{ "src/assets/shaders/basicF.glsl" };
+    std::string gVertPath;
+    std::string gFragPath;
 };
 }

@@ -9,10 +9,12 @@
 #include "../meshHelpers/MeshStyle.hpp"
 #include "../inputHelpers/Types.hpp"
 #include "../stateHelpers/WindowState.hpp"
+#include "../shaderHelpers/ShaderHelper.hpp"
 
 namespace treeHelpers
 {
-#define CHILD_WILL_IMPLEMENT(x) virtual void x () {}
+#define CHILD_MAY_IMPLEMENT(x) virtual void x () {}
+#define CHILD_MUST_IMPLEMENT(x) virtual void x () = 0
 #define IMPL_OF_PARENT(x) void x () override
 
 /**
@@ -28,6 +30,8 @@ public:
     RectNodeABC(const std::string& vertPath, const std::string& fragPath);
     virtual ~RectNodeABC();
 
+    CHILD_MUST_IMPLEMENT(render);
+
     void enableFastTreeSort();
     void updateFastTree();
 
@@ -40,9 +44,11 @@ public:
     TreeStruct gTreeStruct;
 
 protected:
-    CHILD_WILL_IMPLEMENT(onMouseButton);
-    CHILD_WILL_IMPLEMENT(onMouseHover);
+    CHILD_MAY_IMPLEMENT(onMouseButton);
+    CHILD_MAY_IMPLEMENT(onMouseHover);
 
+
+    shaderHelpers::ShaderHelper& gShInstance;
     stateHelpers::WindowState* gStatePtr{ nullptr };
 private:
     void searchForMouseSelection();

@@ -7,6 +7,7 @@ namespace treeHelpers
 
 RectNodeABC::RectNodeABC(const std::string& vertPath, const std::string& fragPath)
     : gMesh{ vertPath, fragPath }
+    , gShInstance{ shaderHelpers::ShaderHelper::get() }
 {}
 
 RectNodeABC::~RectNodeABC()
@@ -17,6 +18,12 @@ RectNodeABC::~RectNodeABC()
     }
 }
 
+/**
+ * @brief Enable fast tree sort option for the *root* object.
+ *
+ * Enabling this option on the root makes it possible to have fast searching
+ * or selected/hovered over/etc nodes.
+ */
 void RectNodeABC::enableFastTreeSort()
 {
     if (!gFastTreeSortPtr)
@@ -26,7 +33,12 @@ void RectNodeABC::enableFastTreeSort()
     }
 }
 
-
+/**
+ * @brief Update internal state of fast tree node.
+ *
+ * Function required to be called in order to keep the fast tree up to date
+ * after each insertion/deletion of a node (or batch of nodes).
+ */
 void RectNodeABC::updateFastTree()
 {
     if (gFastTreeSortPtr)

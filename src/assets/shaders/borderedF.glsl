@@ -10,7 +10,6 @@ in vec2 texOut;
 
 void main()
 {
-
     float ar = uResolution.x / uResolution.y;
     vec2 uv = texOut.xy;;
     uv.x *= ar;

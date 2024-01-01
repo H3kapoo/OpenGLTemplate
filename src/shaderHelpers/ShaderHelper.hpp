@@ -17,7 +17,7 @@ namespace shaderHelpers
 {
 
 /* Enable or disable shader prints regarding uniforms not found */
-#define UNIFORMS_DEBUG_PRINT 0
+#define UNIFORMS_DEBUG_PRINT 2 /* 0 - disabled; 1 - hard exit; 2 - soft continue */
 
 /**
  * @brief Singleton providing shader load/reload and uniform access capabilities.
@@ -63,7 +63,7 @@ private:
 
     /* In case a lot of objects use the same shader, it's pointless to allocate memory for each SAME shader.
        We can reference the same one, just changing uniforms as needed. */
-    std::map<std::string, int32_t*> gShaderPathToGenId;
+    std::map<std::string, shaderIdPtr> gShaderPathToGenId;
 
     shaderId gActiveShaderId{ 0 };
 };

@@ -7,6 +7,7 @@
 #include <glm/gtc/matrix_transform.hpp>
 
 #include "../shaderHelpers/ShaderHelper.hpp"
+#include "../shaderHelpers/UniformKeeper.hpp"
 #include "../shaderHelpers/Types.hpp"
 #include "MeshBuilder.hpp"
 #include "Types.hpp"
@@ -50,6 +51,7 @@ private:
     vaoId gVaoId{ 0 };
 
 public:
+    shaderHelpers::UniformKeeper gUniKeeper;
     glm::vec4 gColor{ 0 };
     BoxModel gBox;
 };

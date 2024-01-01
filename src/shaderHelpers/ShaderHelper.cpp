@@ -30,7 +30,7 @@ ShaderHelper::~ShaderHelper()
 
 
 /**
- * @brief Load or retrieve a shader **Id** pointer handle from the specified vertex and fragment shader paths.
+ * @brief Load and retrieve a shader **Id** pointer handle from the specified vertex and fragment shader paths.
  *
  * This function checks if a shader with the specified vertex and fragment shader already
  * exists in the shader cache. If it does, it returns a pointer to its **Id**. Otherwise, it compiles
@@ -81,7 +81,6 @@ void ShaderHelper::reloadFromPath(const std::string& vertPath, const std::string
         compileShader(fragPath, GL_FRAGMENT_SHADER));
     if (newId != -1)
     {
-        //TODO: Assert there is actually something cached!!
         const std::string combinedPath{ vertPath + fragPath };
         assert(gShaderPathToGenId[combinedPath] != nullptr && "Tried to reload shader that wasn't loaded before!");
         *gShaderPathToGenId[combinedPath] = newId;
@@ -329,11 +328,16 @@ int ShaderHelper::compileShader(const std::string& sourcePath, int32_t shaderTyp
  *
  * @return Nothing.
  */
-#if UNIFORMS_DEBUG_PRINT
+#if UNIFORMS_DEBUG_PRINT == 1
 void ShaderHelper::handleNotFound(const char* location)
 {
     fprintf(stderr, "Uniform '%s' has not been found in bound shader: {%d}\n", location, gActiveShaderId);
     exit(1);
+}
+#elif UNIFORMS_DEBUG_PRINT == 2
+void ShaderHelper::handleNotFound(const char* location)
+{
+    fprintf(stderr, "Uniform '%s' has not been found in bound shader: {%d}\n", location, gActiveShaderId);
 }
 #else
 void ShaderHelper::handleNotFound(const char* location) {}

@@ -13,6 +13,7 @@ RenderHelper::RenderHelper()
     : gShInstance{ shaderHelpers::ShaderHelper::get() }
 {}
 
+
 /**
  * @brief Sets the projection matrix that will be used on next draw call
  *
@@ -23,33 +24,41 @@ void RenderHelper::setProjectionMatrix(const glm::mat4& projMatrix)
     gProjectionMat = projMatrix;
 }
 
+
 /**
- * @brief Render mesh of type **meshHelpers::RectMesh** .
+ * @brief Render node of type **meshHelpers::RectNodeABC** .
  *
- * Quickly render **meshHelpers::RectMesh** type. This enables it's
+ * Quickly render **meshHelpers::RectNodeABC** type. This enables it's
  * stored shader to be the active one while also uploads uniforms such as
  * projection/model matrix and scale of the object to the shader.
  *
- * @param mesh - Rectangle mesh to be rendered.
+ * @param node - Rectangle node to be rendered.
  */
-void RenderHelper::renderRectMesh(meshHelpers::RectMesh& mesh, meshHelpers::MeshStyle& style)
+void RenderHelper::renderRectNode(treeHelpers::RectNodeABC& node)
 {
-    gShInstance.setActiveShaderId(mesh.getShaderId());
-    gShInstance.setVec3f("uResolution", mesh.gBox.scale);
+    /* Set very common uniforms and activate shader id*/
+    gShInstance.setActiveShaderId(node.gMesh.getShaderId());
 
     gShInstance.setMatrix4("uProjMatrix", gProjectionMat);
-    gShInstance.setMatrix4("uModelMatrix", mesh.getTransform());
+    gShInstance.setMatrix4("uModelMatrix", node.gMesh.getTransform());
 
-    gShInstance.setVec4f("uInnerColor", mesh.gColor);
-    gShInstance.setVec4f("uBorderColor", style.gBorderColor);
+    /* IMPORTANT: Keep in mind that if the value referenced happens to not exist
+       anymore, we will get a segfault, so be careful. */
+    auto& uniKeeper = node.gMesh.gUniKeeper;
+    for (const auto& uNameValPair : uniKeeper.gVec3Ptrs)
+    {
+        gShInstance.setVec3f(uNameValPair.first.c_str(), *uNameValPair.second);
+    }
 
-    // gShInstance.setVec4f("uInnerColor", glm::vec4(0.5f, 0.5f, 0.5f, 1.0f));
-    // gShInstance.setVec4f("uBorderColor", glm::vec4(0.5f, 0.0f, 0.0f, 1.0f));
-    gShInstance.setVec4f("uBorderSize", style.gBorderSize);
+    for (const auto& uNameValPair : uniKeeper.gVec4Ptrs)
+    {
+        gShInstance.setVec4f(uNameValPair.first.c_str(), *uNameValPair.second);
+    }
 
-    glBindVertexArray(mesh.getVaoId());
+    glBindVertexArray(node.gMesh.getVaoId());
     glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
 }
+
 
 /**
  * @brief Clear currently bound window depth and color bit.
