@@ -17,7 +17,7 @@ namespace shaderHelpers
 {
 
 /* Enable or disable shader prints regarding uniforms not found */
-#define UNIFORMS_DEBUG_PRINT 2 /* 0 - disabled; 1 - hard exit; 2 - soft continue */
+#define UNIFORMS_DEBUG_PRINT 1 /* 0 - disabled; 1 - hard exit; 2 - soft continue */
 
 /**
  * @brief Singleton providing shader load/reload and uniform access capabilities.

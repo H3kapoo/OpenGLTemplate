@@ -30,8 +30,6 @@ public:
     RectNodeABC(const std::string& vertPath, const std::string& fragPath);
     virtual ~RectNodeABC();
 
-    CHILD_MUST_IMPLEMENT(render);
-
     void enableFastTreeSort();
     void updateFastTree();
 
@@ -46,7 +44,7 @@ public:
 protected:
     CHILD_MAY_IMPLEMENT(onMouseButton);
     CHILD_MAY_IMPLEMENT(onMouseHover);
-
+    CHILD_MAY_IMPLEMENT(onRenderDone);
 
     shaderHelpers::ShaderHelper& gShInstance;
     stateHelpers::WindowState* gStatePtr{ nullptr };

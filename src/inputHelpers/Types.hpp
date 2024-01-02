@@ -8,5 +8,6 @@ enum class Event
     MouseButton2,
     MouseMove,
     WindowResize,
+    RenderDone
 };
 }

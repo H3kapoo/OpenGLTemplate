@@ -39,12 +39,19 @@ void Application::keepRatio()
     statusMesh.gBox.scale.x = fpMesh.gBox.scale.x;
     statusMesh.gBox.scale.y = rootMesh.gBox.scale.y * statusScale - spacingPx;
 
-    // /* 3rd child of root */
+    /* 3rd child of root */
     auto& extractMesh = gExtractNode.gMesh;
     extractMesh.gBox.pos.x = statusMesh.gBox.pos.x;
     extractMesh.gBox.pos.y = statusMesh.gBox.pos.y + statusMesh.gBox.scale.y + spacingPx;
     extractMesh.gBox.scale.x = statusMesh.gBox.scale.x;
     extractMesh.gBox.scale.y = rootMesh.gBox.scale.y * extractScale - spacingPx * 2;
+
+    /* 1st child of top */
+    auto& textMesh = gTextNode.gMesh;
+    textMesh.gBox.pos.x = fpMesh.gBox.pos.x + spacingPx;
+    textMesh.gBox.pos.y = fpMesh.gBox.pos.y + spacingPx;
+    textMesh.gBox.scale.x = fpMesh.gBox.scale.x - spacingPx * 2;
+    textMesh.gBox.scale.y = fpMesh.gBox.scale.y - spacingPx * 2;
 }
 
 void Application::setup()
@@ -59,10 +66,10 @@ void Application::setup()
         0.0f, renderHelpers::RenderHelper::MAX_LAYERS, 0.0f);
     gRenderInstance.setProjectionMatrix(projMatrix);
 
+    /* Basic color and style */
     gRootConcreteNode.gMesh.gColor = utils::hexToVec4("#6ebcb4");
     gRootConcreteNode.gStyle.gBorderSize = glm::vec4(4, 4, 4, 4);
     gRootConcreteNode.gStyle.gBorderColor = utils::hexToVec4("#349798");
-
 
     gFpNode.gMesh.gColor = utils::hexToVec4("#16796F");
     gFpNode.gStyle.gBorderSize = glm::vec4(4, 4, 4, 4);
@@ -75,6 +82,9 @@ void Application::setup()
     gExtractNode.gMesh.gColor = utils::hexToVec4("#16796F");
     gExtractNode.gStyle.gBorderSize = glm::vec4(4, 4, 4, 4);
     gExtractNode.gStyle.gBorderColor = utils::hexToVec4("#349798");
+
+    gTextNode.gMesh.gColor = utils::hexToVec4("#283d9c");
+    gTextNode.gMesh.gColor.a = 0.0f; // make it transparent tho
 
     /* Uniform Watchers */
     gRootConcreteNode.gMesh.gUniKeeper.watch("uInnerColor", &gRootConcreteNode.gMesh.gColor);
@@ -97,9 +107,15 @@ void Application::setup()
     gFpNode.gMesh.gUniKeeper.defaultVec4("uBorderColor");
     gFpNode.gMesh.gUniKeeper.defaultVec4("uBorderSize");
 
+    // gTextNode.gMesh.gUniKeeper.watch("uColor", &gTextNode.gMesh.gColor);
+
+    gTextNode.gMesh.gUniKeeper.watch("uInnerColor", &gTextNode.gMesh.gColor);
+    gTextNode.gMesh.gUniKeeper.watch("uResolution", &gTextNode.gMesh.gBox.scale);
+    gTextNode.gMesh.gUniKeeper.defaultVec4("uBorderColor");
+    gTextNode.gMesh.gUniKeeper.defaultVec4("uBorderSize");
     //TODO: not really hot?
-    gFpNode.gStyle.gTextureId = gTexHelperInstance.loadTexture("src/assets/textures/imeg.jpeg")->gId;
-    gFpNode.gMesh.gUniKeeper.watch("uTextureId", &gFpNode.gStyle.gTextureId);
+    // gFpNode.gStyle.gTextureId = gTexHelperInstance.loadTexture("src/assets/textures/imeg.jpeg")->gId;
+    // gFpNode.gMesh.gUniKeeper.watch("uTextureId", &gFpNode.gStyle.gTextureId);
 
     keepRatio();
 
@@ -110,6 +126,8 @@ void Application::setup()
     gRootConcreteNode.append(&gFpNode);
     gRootConcreteNode.append(&gExtractNode);
     gRootConcreteNode.append(&gStatusNode);
+
+    gFpNode.append(&gTextNode);
 
     /* Enable FTS for quicker click/mouse movement searches in the internal tree struct */
     gRootConcreteNode.enableFastTreeSort();
@@ -140,9 +158,12 @@ void Application::setup()
             gExtractNode.gStyle.gBorderSize.z -= btnPushAmt;
         });
 
+    gTextNode.setText("Ceva text");
+
     printf("Root level is: %d and z: %f\n", gRootConcreteNode.gTreeStruct.getLevel(), gRootConcreteNode.gMesh.gBox.pos.z);
     printf("Top child level is: %d and z: %f\n", gFpNode.gTreeStruct.getLevel(), gFpNode.gMesh.gBox.pos.z);
-    printf("Bot border level is: %d and z: %f\n", gExtractNode.gTreeStruct.getLevel(), gExtractNode.gMesh.gBox.pos.z);
+    printf("Bot child level is: %d and z: %f\n", gExtractNode.gTreeStruct.getLevel(), gExtractNode.gMesh.gBox.pos.z);
+    printf("Top top child level is: %d and z: %f\n", gTextNode.gTreeStruct.getLevel(), gTextNode.gMesh.gBox.pos.z);
 }
 
 void Application::loop()
@@ -150,7 +171,10 @@ void Application::loop()
     if (gReloadShader)
     {
         printf("Should reload now..\n");
-        gShInstance.reloadFromPath(gBorderedVertPath, gBorderedFragPath);
+        // gShInstance.reloadFromPath(gBorderedVertPath, gBorderedFragPath);
+        gShInstance.reloadFromPath(
+            "src/assets/shaders/textV.glsl",
+            "src/assets/shaders/textF.glsl");
         // gTexHelperInstance.reloadFromPath("src/assets/textures/container.jpg");
         gReloadShader = false;
     }
@@ -161,6 +185,7 @@ void Application::loop()
     gRenderInstance.renderRectNode(gFpNode);
     gRenderInstance.renderRectNode(gStatusNode);
     gRenderInstance.renderRectNode(gExtractNode);
+    gRenderInstance.renderRectNode(gTextNode);
 }
 
 void Application::setTitle(const std::string& title)

@@ -9,6 +9,7 @@
 #include "inputHelpers/Types.hpp"
 #include "stateHelpers/WindowState.hpp"
 #include "textureHelpers/TextureHelper.hpp"
+#include "treeHelpers/TextNode.hpp"
 
 class GLFWwindow; /* Fwd declare to avoid include errors */
 
@@ -34,6 +35,9 @@ private:
     std::string gBorderedVertPath{ "src/assets/shaders/borderedV.glsl" };
     std::string gBorderedFragPath{ "src/assets/shaders/borderedF.glsl" };
 
+    std::string gTextVertPath{ "src/assets/shaders/textV.glsl" };
+    std::string gTextFragPath{ "src/assets/shaders/textF.glsl" };
+
     /* Basic mesh */
     treeHelpers::ConcreteNode gRootConcreteNode{ gBorderedVertPath, gBorderedFragPath };
     treeHelpers::ConcreteNode gFpNode{ gBorderedVertPath, gBorderedFragPath };
@@ -41,6 +45,7 @@ private:
     treeHelpers::ConcreteNode gStatusNode{ gBorderedVertPath, gBorderedFragPath };
     treeHelpers::ConcreteNode gExtractNode{ gBorderedVertPath, gBorderedFragPath };
 
+    treeHelpers::TextNode gTextNode{ gBorderedVertPath, gBorderedFragPath };
     stateHelpers::WindowState gWindowState;
 
     bool gReloadShader{ false };

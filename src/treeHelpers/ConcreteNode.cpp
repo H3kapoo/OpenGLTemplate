@@ -8,24 +8,6 @@ ConcreteNode::ConcreteNode(const std::string& vertPath, const std::string& fragP
     , gFragPath(fragPath)
 {}
 
-void ConcreteNode::render()
-{
-    // gShInstance.setVec3f("uResolution", gMesh.gBox.scale);
-    // gShInstance.setVec4f("uInnerColor", gMesh.gColor);
-    // gShInstance.setVec4f("uBorderColor", gStyle.gBorderColor);
-    // gShInstance.setVec4f("uBorderSize", gStyle.gBorderSize);
-
-
-    // // shall be refactored
-    // if (gStyle.gTextureId && false)
-    // {
-    //     /* As far as rendering a rectangle goes, we can assume just Tex Unit 0 will be used anyway */
-    //     glActiveTexture(GL_TEXTURE0);
-    //     gShInstance.setInt("uTexture", GL_TEXTURE0);
-    //     glBindTexture(GL_TEXTURE_2D, gStyle.gTextureId);
-    // }
-}
-
 void ConcreteNode::onMouseButton()
 {
     /* If gMouseClickCb and gMouseClickWithSelfCb are both set, they will both fire.

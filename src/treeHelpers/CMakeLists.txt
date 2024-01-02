@@ -3,4 +3,5 @@ target_sources(${PROJECT_NAME} PRIVATE
     RectNodeABC.cpp
     ConcreteNode.cpp
     FastTreeSort.cpp
+    TextNode.cpp
     )

@@ -17,7 +17,6 @@ public:
 
 private:
     IMPL_OF_PARENT(onMouseButton);
-    IMPL_OF_PARENT(render);
 
     MouseClickCb gMouseClickCb{ nullptr };
     MouseClickWithSelfCb gMouseClickWithSelfCb{ nullptr };

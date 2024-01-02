@@ -94,6 +94,9 @@ void RectNodeABC::emitEvent(const inputHelpers::Event& evt)
     case inputHelpers::Event::MouseMove:
         searchForMouseHover();
         break;
+    case inputHelpers::Event::RenderDone:
+        onRenderDone();
+        break;
     default:
         fprintf(stderr, "Unknown base event: %d\n", static_cast<int>(evt));
         break;

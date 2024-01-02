@@ -9,7 +9,7 @@ set(CMAKE_CXX_STANDARD 23)
 
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/../debug) 
 
-# include_directories ("/usr/include/freetype2") # linux specific
+include_directories ("/usr/include/freetype2") # linux specific
 
 add_executable(${PROJECT_NAME}
     main.cpp
@@ -22,5 +22,7 @@ add_subdirectory(src/renderHelpers)
 add_subdirectory(src/inputHelpers)
 add_subdirectory(src/treeHelpers)
 add_subdirectory(src/textureHelpers)
+add_subdirectory(src/utils)
+add_subdirectory(src/textHelpers)
 
 target_link_libraries(${PROJECT_NAME} glfw GLEW GL X11 pthread Xrandr dl freetype)

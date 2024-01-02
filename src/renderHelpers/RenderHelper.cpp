@@ -55,8 +55,28 @@ void RenderHelper::renderRectNode(treeHelpers::RectNodeABC& node)
         gShInstance.setVec4f(uNameValPair.first.c_str(), *uNameValPair.second);
     }
 
+    for (const auto& uNameValPair : uniKeeper.gIntPtrs)
+    {
+        gShInstance.setInt(uNameValPair.first.c_str(), *uNameValPair.second);
+    }
+
+    /* Note: texture uniforms do not need to be 'watched' for now */
+    if (node.gStyle.gTextureId)
+    {
+        glActiveTexture(GL_TEXTURE0);
+        gShInstance.setInt("uTextureArrayId", GL_TEXTURE0);
+        glBindTexture(GL_TEXTURE_2D_ARRAY, node.gStyle.gTextureId);
+    }
+
     glBindVertexArray(node.gMesh.getVaoId());
     glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+
+    // unbind texture array
+    glBindTexture(GL_TEXTURE_2D_ARRAY, 0);
+
+    /* Notify node and derived class (if impl) that rendering is done. Use it to
+       render post-node objects */
+    node.emitEvent(inputHelpers::Event::RenderDone);
 }
 
 

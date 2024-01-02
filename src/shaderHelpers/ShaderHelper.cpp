@@ -275,6 +275,7 @@ int ShaderHelper::linkShaders(int vertShaderId, int fragShaderId)
     {
         glGetProgramInfoLog(gActiveShaderId, 512, nullptr, infoLog);
         fprintf(stderr, "Could not link program because:\n\t%s\n", infoLog);
+        exit(1);
         return -1;
     }
 
@@ -297,6 +298,7 @@ int ShaderHelper::compileShader(const std::string& sourcePath, int32_t shaderTyp
     if (!shaderFile)
     {
         fprintf(stderr, "Could not open %s shader file at %s\n", type.c_str(), sourcePath.c_str());
+        exit(1);
         return -1;
     }
 
@@ -317,6 +319,7 @@ int ShaderHelper::compileShader(const std::string& sourcePath, int32_t shaderTyp
     {
         glGetShaderInfoLog(shaderPart, 512, NULL, infoLog);
         fprintf(stderr, "Compile failed for shader %s because:\n\t%s\n", type.c_str(), infoLog);
+        exit(1);
         return -1;
     }
 
