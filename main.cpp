@@ -27,7 +27,6 @@ int main(int argc, char* argv[])
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
-    // glfwSwapInterval(0); // zero to disable Vsync
 
     /* Create mock window just to succeed initializing glew*/
     GLFWwindow* window = glfwCreateWindow(windowWidth, windowHeight, "MyWindow", NULL, NULL);
@@ -39,6 +38,7 @@ int main(int argc, char* argv[])
     }
 
     glfwMakeContextCurrent(window);
+    // glfwSwapInterval(0); // zero to disable Vsync
 
     /* Init glew after glfw (we need to have a valid context bound first) */
     if (glewInit() != GLEW_OK)
@@ -70,6 +70,10 @@ int main(int argc, char* argv[])
         std::placeholders::_3));
 
     inHelper.registerOnMouseMoveAction(std::bind(&Application::onMouseMoveAction, &app,
+        std::placeholders::_1,
+        std::placeholders::_2));
+
+    inHelper.registerOnMouseDropAction(std::bind(&Application::onMouseDrop, &app,
         std::placeholders::_1,
         std::placeholders::_2));
 

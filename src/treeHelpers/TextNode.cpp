@@ -6,19 +6,29 @@ namespace treeHelpers
 {
 
 TextNode::TextNode(const std::string& vertPath, const std::string& fragPath)
-    : RectNodeABC(vertPath, fragPath)
+    : RectNodeABC("src/assets/shaders/borderedV.glsl", "src/assets/shaders/borderedF.glsl")
     , gRenderInstance{ renderHelpers::RenderHelper::get() }
     , gTextHelperInstance{ textHelpers::TextHelper::get() }
-{}
-
-void TextNode::setText(const std::string& text)
 {
     lfPtr = gTextHelperInstance.loadFont("src/assets/fonts/LiberationSerif-Regular.ttf", 32);
-    // lfPtr = gTextHelperInstance.loadFont("src/assets/fonts/cmr10.ttf", 32);
     /* What are we even supposed to do if we don't manage to load the font? */
     if (!lfPtr) { exit(1); }
 
-    // gTextHelper.loadFont("src/assets/fonts/cmr10.ttf");
+    /* Watch out shader's uniforms for changes. Set default if any not used. */
+    gMesh.gUniKeeper.watch("uInnerColor", &gMesh.gColor);
+    gMesh.gUniKeeper.watch("uBorderColor", &gStyle.gBorderColor);
+    gMesh.gUniKeeper.watch("uBorderSize", &gStyle.gBorderSize);
+    gMesh.gUniKeeper.watch("uResolution", &gMesh.gBox.scale);
+
+    /* Texture is not watched and simply set in the renderer instead. Its not hot for now*/
+    node.gStyle.gTextureId = lfPtr->id;
+    node.gMesh.gUniKeeper.watch("uColor", &node.gMesh.gColor);
+    node.gMesh.gUniKeeper.watch("uCharIndex", &gLetterIdx);
+}
+
+void TextNode::setText(const std::string& text)
+{
+    gText = text;
 
     const float textDepth = gTreeStruct.getLevel() + 0.5f; // slightly push it upwards
     node.gMesh.gBox.pos.z = textDepth;
@@ -28,33 +38,40 @@ void TextNode::setText(const std::string& text)
     node.gMesh.gBox.scale.y = 32;
 
     node.gMesh.gColor = utils::hexToVec4("#d1d1d1");
-    node.gStyle.gTextureId = lfPtr->id;
-
-    node.gMesh.gUniKeeper.watch("uColor", &node.gMesh.gColor);
 }
 
 void TextNode::onRenderDone()
 {
+    //TODO: Implement text batching
+
     /* Try to render text on top now */
     glDepthMask(GL_FALSE);
 
-    std::string text{ "The brown blue fox, jumped over the" };
-    uint32_t letterIdx = 0;
-    float xCached = node.gMesh.gBox.pos.x;
-    float yCached = node.gMesh.gBox.pos.y;
-    for (int i = 0; i < text.length(); i++)
+    float bringDown = 32;
+    float x = gMesh.gBox.pos.x;
+    float y = gMesh.gBox.pos.y + bringDown;
+    for (int i = 0; i < gText.length(); i++)
     {
-        auto& chData = lfPtr->data[text.at(i)];
+        auto& chData = lfPtr->data[gText[i]];
 
-        letterIdx = chData.charCode;
-        node.gMesh.gUniKeeper.watch("uCharIndex", &letterIdx);
+        gLetterIdx = chData.charCode;
 
-        node.gMesh.gBox.pos.y -= chData.bearing.y;
+        float xPos = x + chData.bearing.x;
+        float yPos = y - chData.bearing.y;
+        if (xPos > (gMesh.gBox.pos.x + gMesh.gBox.scale.x - 32))
+        {
+            x = gMesh.gBox.pos.x;
+            y += bringDown;
+            xPos = x;
+            yPos = y - chData.bearing.y;
+        }
+
+        node.gMesh.gBox.pos.x = xPos;
+        node.gMesh.gBox.pos.y = yPos;
         gRenderInstance.renderRectNode(node);
-        node.gMesh.gBox.pos.x += (chData.hAdvance >> 6) + chData.bearing.x;
-        node.gMesh.gBox.pos.y = yCached;
+
+        x += (chData.hAdvance >> 6);
     }
-    node.gMesh.gBox.pos.x = xCached;
     glDepthMask(GL_TRUE);
 
     // gRenderInstance.beginTextBatch(some settings);
@@ -72,8 +89,29 @@ void TextNode::onMouseButton()
     }
 }
 
+void TextNode::onItemsDrop()
+{
+    if (gMouseDropCb && gStatePtr)
+    {
+        gMouseDropCb(gStatePtr->dropCount, gStatePtr->droppedPaths);
+    }
+    // we shall call drop callback
+    // printf("Im node %d and you dropped:\n", gTreeStruct.getId());
+    // gText.clear();
+    // for (int i = 0; i < gStatePtr->dropCount; i++)
+    // {
+    //     gText.append(gStatePtr->droppedPaths[i]);
+    //     gText.append(" - ");
+    // }
+}
+
 void TextNode::registerOnClick(const MouseClickCb callback)
 {
     gMouseClickCb = callback;
+}
+
+void TextNode::registerOnItemsDrop(const MouseDropCb callback)
+{
+    gMouseDropCb = callback;
 }
 }

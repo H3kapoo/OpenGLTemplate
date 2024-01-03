@@ -45,12 +45,14 @@ protected:
     CHILD_MAY_IMPLEMENT(onMouseButton);
     CHILD_MAY_IMPLEMENT(onMouseHover);
     CHILD_MAY_IMPLEMENT(onRenderDone);
+    CHILD_MAY_IMPLEMENT(onItemsDrop);
 
     shaderHelpers::ShaderHelper& gShInstance;
     stateHelpers::WindowState* gStatePtr{ nullptr };
 private:
     void searchForMouseSelection();
     void searchForMouseHover();
+    void searchForMouseDropLoc();
 
     FastTreeSort* gFastTreeSortPtr{ nullptr };
 public:

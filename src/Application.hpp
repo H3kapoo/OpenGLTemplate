@@ -23,6 +23,7 @@ public:
     void onWindowResize(int width, int height);
     void onButtonAction(int button, int action, int mods);
     void onMouseMoveAction(double xPos, double yPos);
+    void onMouseDrop(int dropCount, const char** paths);
 
 private:
     void keepRatio();
@@ -41,11 +42,11 @@ private:
     /* Basic mesh */
     treeHelpers::ConcreteNode gRootConcreteNode{ gBorderedVertPath, gBorderedFragPath };
     treeHelpers::ConcreteNode gFpNode{ gBorderedVertPath, gBorderedFragPath };
-    // treeHelpers::ConcreteNode gFpNode{ gTexturedVertPath, gTexturedFragPath };
     treeHelpers::ConcreteNode gStatusNode{ gBorderedVertPath, gBorderedFragPath };
     treeHelpers::ConcreteNode gExtractNode{ gBorderedVertPath, gBorderedFragPath };
 
-    treeHelpers::TextNode gTextNode{ gBorderedVertPath, gBorderedFragPath };
+    treeHelpers::TextNode gPathTextNode{ gTextVertPath, gTextFragPath };
+
     stateHelpers::WindowState gWindowState;
 
     bool gReloadShader{ false };

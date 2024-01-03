@@ -1,5 +1,7 @@
 #include "Application.hpp"
 
+#include <filesystem>
+
 #include <GLFW/glfw3.h>
 
 #include "utils/CommonUtils.hpp"
@@ -47,7 +49,7 @@ void Application::keepRatio()
     extractMesh.gBox.scale.y = rootMesh.gBox.scale.y * extractScale - spacingPx * 2;
 
     /* 1st child of top */
-    auto& textMesh = gTextNode.gMesh;
+    auto& textMesh = gPathTextNode.gMesh;
     textMesh.gBox.pos.x = fpMesh.gBox.pos.x + spacingPx;
     textMesh.gBox.pos.y = fpMesh.gBox.pos.y + spacingPx;
     textMesh.gBox.scale.x = fpMesh.gBox.scale.x - spacingPx * 2;
@@ -83,8 +85,8 @@ void Application::setup()
     gExtractNode.gStyle.gBorderSize = glm::vec4(4, 4, 4, 4);
     gExtractNode.gStyle.gBorderColor = utils::hexToVec4("#349798");
 
-    gTextNode.gMesh.gColor = utils::hexToVec4("#283d9c");
-    gTextNode.gMesh.gColor.a = 0.0f; // make it transparent tho
+    gPathTextNode.gMesh.gColor = utils::hexToVec4("#283d9c");
+    gPathTextNode.gMesh.gColor.a = 0.0f; // make it transparent tho
 
     /* Uniform Watchers */
     gRootConcreteNode.gMesh.gUniKeeper.watch("uInnerColor", &gRootConcreteNode.gMesh.gColor);
@@ -107,12 +109,9 @@ void Application::setup()
     gFpNode.gMesh.gUniKeeper.defaultVec4("uBorderColor");
     gFpNode.gMesh.gUniKeeper.defaultVec4("uBorderSize");
 
-    // gTextNode.gMesh.gUniKeeper.watch("uColor", &gTextNode.gMesh.gColor);
+    // gPathTextNode.gMesh.gUniKeeper.watch("uColor", &gPathTextNode.gMesh.gColor);
 
-    gTextNode.gMesh.gUniKeeper.watch("uInnerColor", &gTextNode.gMesh.gColor);
-    gTextNode.gMesh.gUniKeeper.watch("uResolution", &gTextNode.gMesh.gBox.scale);
-    gTextNode.gMesh.gUniKeeper.defaultVec4("uBorderColor");
-    gTextNode.gMesh.gUniKeeper.defaultVec4("uBorderSize");
+
     //TODO: not really hot?
     // gFpNode.gStyle.gTextureId = gTexHelperInstance.loadTexture("src/assets/textures/imeg.jpeg")->gId;
     // gFpNode.gMesh.gUniKeeper.watch("uTextureId", &gFpNode.gStyle.gTextureId);
@@ -127,7 +126,7 @@ void Application::setup()
     gRootConcreteNode.append(&gExtractNode);
     gRootConcreteNode.append(&gStatusNode);
 
-    gFpNode.append(&gTextNode);
+    gFpNode.append(&gPathTextNode);
 
     /* Enable FTS for quicker click/mouse movement searches in the internal tree struct */
     gRootConcreteNode.enableFastTreeSort();
@@ -158,12 +157,20 @@ void Application::setup()
             gExtractNode.gStyle.gBorderSize.z -= btnPushAmt;
         });
 
-    gTextNode.setText("Ceva text");
+    gPathTextNode.setText(std::filesystem::current_path());
+    gPathTextNode.registerOnItemsDrop([this](int32_t count, const char** paths)
+        {
+            for (int i = 0; i < count; i++)
+            {
+                printf("Path dropped: %s\n", paths[i]);
+                gPathTextNode.setText(paths[i]);
+            }
+        });
 
     printf("Root level is: %d and z: %f\n", gRootConcreteNode.gTreeStruct.getLevel(), gRootConcreteNode.gMesh.gBox.pos.z);
     printf("Top child level is: %d and z: %f\n", gFpNode.gTreeStruct.getLevel(), gFpNode.gMesh.gBox.pos.z);
     printf("Bot child level is: %d and z: %f\n", gExtractNode.gTreeStruct.getLevel(), gExtractNode.gMesh.gBox.pos.z);
-    printf("Top top child level is: %d and z: %f\n", gTextNode.gTreeStruct.getLevel(), gTextNode.gMesh.gBox.pos.z);
+    printf("Top top child level is: %d and z: %f\n", gPathTextNode.gTreeStruct.getLevel(), gPathTextNode.gMesh.gBox.pos.z);
 }
 
 void Application::loop()
@@ -177,6 +184,7 @@ void Application::loop()
             "src/assets/shaders/textF.glsl");
         // gTexHelperInstance.reloadFromPath("src/assets/textures/container.jpg");
         gReloadShader = false;
+        gPathTextNode.setText("Reloaded..");
     }
 
     /* Render stuff, order independent (depends only on Z) */
@@ -185,7 +193,7 @@ void Application::loop()
     gRenderInstance.renderRectNode(gFpNode);
     gRenderInstance.renderRectNode(gStatusNode);
     gRenderInstance.renderRectNode(gExtractNode);
-    gRenderInstance.renderRectNode(gTextNode);
+    gRenderInstance.renderRectNode(gPathTextNode);
 }
 
 void Application::setTitle(const std::string& title)
@@ -200,6 +208,7 @@ void Application::onKeyPress(int key, int sc, int action, int mods)
     if (key == GLFW_KEY_R && action == GLFW_PRESS)
     {
         gReloadShader = true;
+        gWindowState;
     }
 }
 
@@ -232,4 +241,14 @@ void Application::onMouseMoveAction(double xPos, double yPos)
     gWindowState.mouseY = yPos;
     gRootConcreteNode.emitEvent(inputHelpers::Event::MouseMove);
 }
+
+void Application::onMouseDrop(int dropCount, const char** paths)
+{
+    gWindowState.droppedPaths = paths;
+    gWindowState.dropCount = dropCount;
+    gRootConcreteNode.emitEvent(inputHelpers::Event::ItemsDrop);
+    gWindowState.droppedPaths = nullptr;
+    gWindowState.dropCount = 0;
+}
+
 

@@ -20,6 +20,8 @@ public:
     void registerOnWindowResizeAction(const std::function<void(int width, int height)> callback);
     void registerOnMouseButtonAction(const std::function<void(int button, int action, int mods)> callback);
     void registerOnMouseMoveAction(const std::function<void(double xPos, double yPos)> callback);
+    void registerOnMouseDropAction(const std::function<void(double xPos, double yPos)> callback);
+    void registerOnMouseDropAction(const std::function<void(double dropCount, const char** paths)> callback);
 
 private:
     InputHelper() = default;
@@ -30,11 +32,13 @@ private:
     static void windowResizeCallback(GLFWwindow* window, int width, int height);
     static void mouseButtonCallback(GLFWwindow* window, int button, int action, int mods);
     static void mouseMoveCallback(GLFWwindow* window, double xPos, double yPos);
+    static void dropCallback(GLFWwindow* window, int dropCount, const char** paths);
 
     void invokeOnKeyAction(int key, int scanCode, int action, int mods);
     void invokeOnWindowResizeAction(int width, int height);
     void invokeOnMouseButtonAction(int button, int action, int mods);
     void invokeOnMouseMoveAction(double xPos, double yPos);
+    void invokeOnMouseDropAction(int dropCount, const char** paths);
 
     GLFWwindow* gObservedWindow{ nullptr };
 
@@ -42,5 +46,6 @@ private:
     std::function<void(int width, int height)> gOnWindowResizeActionCallback;
     std::function<void(int button, int action, int mods)> gOnMouseButtonActionCallback;
     std::function<void(double xPos, double yPos)> gOnMouseMoveActionCallback;
+    std::function<void(int dropCount, const char** paths)> gOnMouseDropActionCallback;
 };
 }

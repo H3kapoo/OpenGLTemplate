@@ -97,6 +97,11 @@ void RectNodeABC::emitEvent(const inputHelpers::Event& evt)
     case inputHelpers::Event::RenderDone:
         onRenderDone();
         break;
+    case inputHelpers::Event::ItemsDrop:
+        //TODO: Bad design for now
+        searchForMouseDropLoc();
+        onRenderDone();
+        break;
     default:
         fprintf(stderr, "Unknown base event: %d\n", static_cast<int>(evt));
         break;
@@ -153,7 +158,7 @@ void RectNodeABC::searchForMouseSelection()
 
 void RectNodeABC::searchForMouseHover()
 {
-    return; // For now only
+    return;
     if (!gStatePtr)
     {
         fprintf(stderr, "Window State pointer is not set for node with id: %d\n", gTreeStruct.getId()); exit(1);
@@ -178,6 +183,35 @@ void RectNodeABC::searchForMouseHover()
             x++;
         }
     }
+}
 
+
+void RectNodeABC::searchForMouseDropLoc()
+{
+    if (!gStatePtr)
+    {
+        fprintf(stderr, "Window State pointer is not set for node with id: %d\n", gTreeStruct.getId()); exit(1);
+    }
+
+    if (gTreeStruct.isRootNode() && gFastTreeSortPtr != nullptr)
+    {
+        // printf("Time: %f\n", glfwGetTime());
+        int32_t x = 0;
+        for (const auto& c : gFastTreeSortPtr->getBuffer())
+        {
+            int mouseX = gStatePtr->mouseX;
+            int mouseY = gStatePtr->mouseY;
+            auto& mesh = c->gMesh;
+            if ((mouseX > mesh.gBox.pos.x) && (mouseX < mesh.gBox.pos.x + mesh.gBox.scale.x) &&
+                (mouseY > mesh.gBox.pos.y) && (mouseY < mesh.gBox.pos.y + mesh.gBox.scale.y))
+            {
+                // gStatePtr->selectedId = gTreeStruct.getId();
+                // printf("%f Iter: %d Child with level: %d\n", glfwGetTime(), x, c->gTreeStruct.getLevel());
+                c->onItemsDrop();
+                break;
+            }
+            x++;
+        }
+    }
 }
 }

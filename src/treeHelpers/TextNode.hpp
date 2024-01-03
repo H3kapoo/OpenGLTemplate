@@ -2,10 +2,10 @@
 
 #include <string>
 
-#include "RectNodeABC.hpp"
+#include "ConcreteNode.hpp"
 #include "../textHelpers/TextHelper.hpp"
-// #include "../textHelpers/Types.hpp"
 #include "../renderHelpers/RenderHelper.hpp"
+
 namespace treeHelpers
 {
 
@@ -15,21 +15,28 @@ public:
     TextNode(const std::string& vertPath, const std::string& fragPath);
 
     void registerOnClick(const MouseClickCb callback);
+    void registerOnItemsDrop(const MouseDropCb callback);
 
     void setText(const std::string& text);
 
 private:
-    IMPL_OF_PARENT(onMouseButton);
-    IMPL_OF_PARENT(onRenderDone);
+    void onRenderDone();
 
-    /* COncept for text rendering, experimental */
+    IMPL_OF_PARENT(onMouseButton);
+    IMPL_OF_PARENT(onItemsDrop);
+
+    /* Concept for text rendering, experimental */
     std::string gTextVertPath{ "src/assets/shaders/textV.glsl" };
     std::string gTextFragPath{ "src/assets/shaders/textF.glsl" };
-    RectNodeABC node{ gTextVertPath, gTextFragPath };
+    ConcreteNode node{ gTextVertPath, gTextFragPath }; //TODO: This shall be replaced by render batcher
 
     MouseClickCb gMouseClickCb{ nullptr };
+    MouseDropCb gMouseDropCb{ nullptr };
 
     textHelpers::LoadedFontPtr lfPtr{ nullptr };
+
+    std::string gText;
+    uint32_t gLetterIdx{ 0 };
 
     textHelpers::TextHelper& gTextHelperInstance;
     renderHelpers::RenderHelper& gRenderInstance;

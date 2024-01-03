@@ -1,7 +1,9 @@
 #pragma once
 
-#include <GLFW/glfw3.h>
 #include <cstdint>
+
+#include <GLFW/glfw3.h>
+
 #include "../treeHelpers/Types.hpp"
 
 namespace stateHelpers
@@ -19,6 +21,10 @@ struct WindowState
     double mouseX{ 0 }, mouseY{ 0 };
     bool mouseClicked{ false };
     int button{ 0 };
+
+    /* Consumer is responsible for keeping the data alive */
+    const char** droppedPaths{ nullptr };
+    int32_t dropCount{ 0 };
 
     treeHelpers::treeNodeId selectedId{ 0 };
 };

@@ -8,6 +8,7 @@ enum class Event
     MouseButton2,
     MouseMove,
     WindowResize,
-    RenderDone
+    RenderDone,  //TODO: Artifact of design. Shall be removed later
+    ItemsDrop
 };
 }

@@ -18,6 +18,8 @@ namespace shaderHelpers
  * wants without altering the rendering code. It may be a trade-off between performance and
  * readability in the future.
  *
+ * @note EXTRA CARE needs to be taken so that we don't push to watch the same variable
+ *       in some kind of loop. It will KILL performance.
  */
 class UniformKeeper
 {
