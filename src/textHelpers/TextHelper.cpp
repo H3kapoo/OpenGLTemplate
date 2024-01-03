@@ -8,12 +8,30 @@
 namespace textHelpers
 {
 
+/**
+ * @brief Get class instance.
+ *
+ * @return A reference to the class instance.
+ */
 TextHelper& TextHelper::get()
 {
     static TextHelper instance;
     return instance;
 }
 
+
+/**
+ * @brief Load font and get a pointer to stored cache location of loaded font.
+ *
+ * Function loads font into memory, if not already in cache, and returns pointer
+ * inside the map where this data is located.
+ *
+ * @note No SDF support as of now. There are some questionable bugs.
+ *
+ * @param fontPath       Path to font to be loaded.
+ * @param fontSize       Size of the font.
+ * @return LoadedFontPtr Pointer to loaded font data.
+ */
 LoadedFontPtr TextHelper::loadFont(const std::string& fontPath, const int32_t fontSize)
 {
     /*

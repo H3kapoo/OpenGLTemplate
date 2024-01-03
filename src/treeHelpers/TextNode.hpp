@@ -28,7 +28,7 @@ private:
     /* Concept for text rendering, experimental */
     std::string gTextVertPath{ "src/assets/shaders/textV.glsl" };
     std::string gTextFragPath{ "src/assets/shaders/textF.glsl" };
-    ConcreteNode node{ gTextVertPath, gTextFragPath }; //TODO: This shall be replaced by render batcher
+    ConcreteNode node; //TODO: This shall be replaced by render batcher
 
     MouseClickCb gMouseClickCb{ nullptr };
     MouseDropCb gMouseDropCb{ nullptr };
@@ -38,8 +38,8 @@ private:
     std::string gText;
     uint32_t gLetterIdx{ 0 };
 
-    textHelpers::TextHelper& gTextHelperInstance;
     renderHelpers::RenderHelper& gRenderInstance;
+    textHelpers::TextHelper& gTextHelperInstance;
 };
 
 }

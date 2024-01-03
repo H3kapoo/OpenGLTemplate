@@ -7,6 +7,7 @@ namespace treeHelpers
 
 TextNode::TextNode(const std::string& vertPath, const std::string& fragPath)
     : RectNodeABC("src/assets/shaders/borderedV.glsl", "src/assets/shaders/borderedF.glsl")
+    , node{ vertPath, fragPath }
     , gRenderInstance{ renderHelpers::RenderHelper::get() }
     , gTextHelperInstance{ textHelpers::TextHelper::get() }
 {
@@ -50,9 +51,9 @@ void TextNode::onRenderDone()
     float bringDown = 32;
     float x = gMesh.gBox.pos.x;
     float y = gMesh.gBox.pos.y + bringDown;
-    for (int i = 0; i < gText.length(); i++)
+    for (uint32_t i = 0; i < gText.length(); i++)
     {
-        auto& chData = lfPtr->data[gText[i]];
+        textHelpers::ASCIIChar& chData = lfPtr->data[gText[i]];
 
         gLetterIdx = chData.charCode;
 

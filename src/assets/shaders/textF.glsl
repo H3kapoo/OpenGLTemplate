@@ -14,7 +14,7 @@ void main()
     //     discard;
     // float feather = 0.03;
     // t = smoothstep(0.5f - feather, 0.5f + feather, t);
-    gl_FragColor = vec4(uColor.rgb, t);
+    gl_FragColor = vec4(uColor.xyz, t);
 
     // gl_FragColor = vec4(1.0f, 0.0f, 0.0f, t);
     // gl_FragColor = vec4(t, t, t, 1.0f);

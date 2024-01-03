@@ -8,6 +8,15 @@
 
 namespace textHelpers
 {
+/**
+ * @brief Singleton class responsible for loading fonts.
+ *
+ * Class that loads fonts into memory using vendor/stb_image and caches
+ * data for later use so that two calls to load the same font will result in
+ * cache being accessed instead.
+ *
+ * @note Currently this is not hot reloadable like shaders/textures.
+ */
 class TextHelper
 {
 public:

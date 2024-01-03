@@ -17,16 +17,16 @@ void TreeStruct::append(RectNodeABC* node)
     gChildren.push_back(node);
 }
 
-void TreeStruct::remove(const RectNodeABC* node)
+void TreeStruct::remove(const RectNodeABC*)
 {
 
 }
 
-void TreeStruct::find(const RectNodeABC* node)
+void TreeStruct::find(const RectNodeABC*)
 {
 }
 
-void TreeStruct::findDeep(const RectNodeABC* node)
+void TreeStruct::findDeep(const RectNodeABC*)
 {
 }
 

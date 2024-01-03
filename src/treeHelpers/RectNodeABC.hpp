@@ -46,6 +46,8 @@ protected:
     CHILD_MAY_IMPLEMENT(onMouseHover);
     CHILD_MAY_IMPLEMENT(onRenderDone);
     CHILD_MAY_IMPLEMENT(onItemsDrop);
+    CHILD_MAY_IMPLEMENT(onMouseEnter);
+    CHILD_MAY_IMPLEMENT(onMouseExit);
 
     shaderHelpers::ShaderHelper& gShInstance;
     stateHelpers::WindowState* gStatePtr{ nullptr };

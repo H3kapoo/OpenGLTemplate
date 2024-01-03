@@ -47,7 +47,7 @@ void InputHelper::observe(GLFWwindow* window)
 /**
  * @brief Static gateway needed to access key input data from the OS.
  */
-void InputHelper::keyCallback(GLFWwindow* window, int key, int scanCode, int action, int mods)
+void InputHelper::keyCallback(GLFWwindow*, int key, int scanCode, int action, int mods)
 {
     get().invokeOnKeyAction(key, scanCode, action, mods);
 }
@@ -56,7 +56,7 @@ void InputHelper::keyCallback(GLFWwindow* window, int key, int scanCode, int act
 /**
  * @brief Static gateway needed to access window resize data from the OS.
  */
-void InputHelper::windowResizeCallback(GLFWwindow* window, int width, int height)
+void InputHelper::windowResizeCallback(GLFWwindow*, int width, int height)
 {
     get().invokeOnWindowResizeAction(width, height);
 }
@@ -65,7 +65,7 @@ void InputHelper::windowResizeCallback(GLFWwindow* window, int width, int height
 /**
  * @brief Static gateway needed to access window mouse button data from the OS.
  */
-void InputHelper::mouseButtonCallback(GLFWwindow* window, int button, int action, int mods)
+void InputHelper::mouseButtonCallback(GLFWwindow*, int button, int action, int mods)
 {
     get().invokeOnMouseButtonAction(button, action, mods);
 }
@@ -74,7 +74,7 @@ void InputHelper::mouseButtonCallback(GLFWwindow* window, int button, int action
 /**
  * @brief Static gateway needed to access window mouse position data from the OS.
  */
-void InputHelper::mouseMoveCallback(GLFWwindow* window, double xPos, double yPos)
+void InputHelper::mouseMoveCallback(GLFWwindow*, double xPos, double yPos)
 {
     get().invokeOnMouseMoveAction(xPos, yPos);
 }
@@ -83,7 +83,7 @@ void InputHelper::mouseMoveCallback(GLFWwindow* window, double xPos, double yPos
 /**
  * @brief Static gateway needed to access window mouse dropped items from the OS.
  */
-void InputHelper::dropCallback(GLFWwindow* window, int dropCount, const char** paths)
+void InputHelper::dropCallback(GLFWwindow*, int dropCount, const char** paths)
 {
     get().invokeOnMouseDropAction(dropCount, paths);
 }

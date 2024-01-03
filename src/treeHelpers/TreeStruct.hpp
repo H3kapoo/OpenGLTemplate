@@ -46,7 +46,7 @@ private:
     treeNodeId gId;
     treeNodeLevel gLevel{ 1 };
     RectNodeABC* gParent{ nullptr };
-    std::vector<RectNodeABC*> gChildren;
+    std::vector<RectNodeABC*> gChildren{};
 };
 
 }

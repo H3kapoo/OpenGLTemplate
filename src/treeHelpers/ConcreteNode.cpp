@@ -8,6 +8,31 @@ ConcreteNode::ConcreteNode(const std::string& vertPath, const std::string& fragP
     , gFragPath(fragPath)
 {}
 
+void ConcreteNode::onMouseHover()
+{
+    if (gMouseHoverCb && gStatePtr)
+    {
+        printf("Hovering concrete\n");
+        gMouseHoverCb(gStatePtr->mouseX, gStatePtr->mouseY);
+    }
+}
+
+void ConcreteNode::onMouseEnter()
+{
+    if (gMouseEnterCb && gStatePtr)
+    {
+        gMouseEnterCb(gStatePtr->mouseX, gStatePtr->mouseY);
+    }
+}
+
+void ConcreteNode::onMouseExit()
+{
+    if (gMouseExitCb && gStatePtr)
+    {
+        gMouseExitCb(gStatePtr->mouseX, gStatePtr->mouseY);
+    }
+}
+
 void ConcreteNode::onMouseButton()
 {
     /* If gMouseClickCb and gMouseClickWithSelfCb are both set, they will both fire.
@@ -41,6 +66,21 @@ void ConcreteNode::registerOnClick(const MouseClickWithSelfCb callback)
 void ConcreteNode::registerOnRelease(const MouseReleaseCb callback)
 {
     gMouseReleaseCb = callback;
+}
+
+void ConcreteNode::registerOnMouseHover(const MouseHoverCb callback)
+{
+    gMouseHoverCb = callback;
+}
+
+void ConcreteNode::registerOnMouseExit(const MouseExitCb callback)
+{
+    gMouseExitCb = callback;
+}
+
+void ConcreteNode::registerOnMouseEnter(const MouseEnterCb callback)
+{
+    gMouseEnterCb = callback;
 }
 
 }

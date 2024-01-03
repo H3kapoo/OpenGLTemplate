@@ -5,6 +5,7 @@
 #include <sstream>
 #include <glm/glm.hpp>
 
+/* Namespace dedicated to any common utilty functions. */
 namespace utils
 {
 

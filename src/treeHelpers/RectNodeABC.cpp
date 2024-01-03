@@ -6,8 +6,8 @@ namespace treeHelpers
 {
 
 RectNodeABC::RectNodeABC(const std::string& vertPath, const std::string& fragPath)
-    : gMesh{ vertPath, fragPath }
-    , gShInstance{ shaderHelpers::ShaderHelper::get() }
+    : gShInstance{ shaderHelpers::ShaderHelper::get() }
+    , gMesh{ vertPath, fragPath }
 {}
 
 RectNodeABC::~RectNodeABC()
@@ -93,6 +93,7 @@ void RectNodeABC::emitEvent(const inputHelpers::Event& evt)
         break;
     case inputHelpers::Event::MouseMove:
         searchForMouseHover();
+        onMouseHover();
         break;
     case inputHelpers::Event::RenderDone:
         onRenderDone();
@@ -158,7 +159,6 @@ void RectNodeABC::searchForMouseSelection()
 
 void RectNodeABC::searchForMouseHover()
 {
-    return;
     if (!gStatePtr)
     {
         fprintf(stderr, "Window State pointer is not set for node with id: %d\n", gTreeStruct.getId()); exit(1);
@@ -166,8 +166,7 @@ void RectNodeABC::searchForMouseHover()
 
     if (gTreeStruct.isRootNode() && gFastTreeSortPtr != nullptr)
     {
-        // printf("Time: %f\n", glfwGetTime());
-        int32_t x = 0;
+        bool changeNeeded{ false };
         for (const auto& c : gFastTreeSortPtr->getBuffer())
         {
             int mouseX = gStatePtr->mouseX;
@@ -176,13 +175,56 @@ void RectNodeABC::searchForMouseHover()
             if ((mouseX > mesh.gBox.pos.x) && (mouseX < mesh.gBox.pos.x + mesh.gBox.scale.x) &&
                 (mouseY > mesh.gBox.pos.y) && (mouseY < mesh.gBox.pos.y + mesh.gBox.scale.y))
             {
-                // gStatePtr->selectedId = gTreeStruct.getId();
-                printf("%f Iter: %d Child with level: %d\n", glfwGetTime(), x, c->gTreeStruct.getLevel());
+                auto newHoveredId = c->gTreeStruct.getId();
+                if (newHoveredId != gStatePtr->hoveredId)
+                {
+                    gStatePtr->prevHoveredId = gStatePtr->hoveredId;
+                    changeNeeded = true;
+                }
+
+                gStatePtr->hoveredId = newHoveredId;
+                c->onMouseHover();
                 break;
             }
-            x++;
+        }
+
+        bool notifiedExit{ false }, notifiedEnter{ false };
+        for (const auto& c : gFastTreeSortPtr->getBuffer())
+        {
+            if (!changeNeeded || (notifiedEnter && notifiedExit))
+            {
+                break;
+            }
+
+            auto id = c->gTreeStruct.getId();
+            if (id == gStatePtr->hoveredId)
+            {
+                c->onMouseEnter();
+                notifiedEnter = true;
+            }
+
+            if (id == gStatePtr->prevHoveredId)
+            {
+                c->onMouseExit();
+                notifiedExit = true;
+            }
         }
     }
+
+    // printf("{%d} Prev hovered %d actuall %d\n", gTreeStruct.getId(), gStatePtr->prevHoveredId, gStatePtr->hoveredId);
+
+    // guaranteed parent already ran it's block
+    // if (gStatePtr->prevHoveredId == gTreeStruct.getId())
+    // {
+    //     // onMouseExit();
+    //     printf("Mouse exited {%d}\n", gTreeStruct.getId());
+    // }
+
+    // if (gStatePtr->hoveredId == gTreeStruct.getId())
+    // {
+    //     //     // onMouseEnter();
+    //     printf("Mouse entered {%d}\n", gTreeStruct.getId());
+    // }
 }
 
 
@@ -195,8 +237,6 @@ void RectNodeABC::searchForMouseDropLoc()
 
     if (gTreeStruct.isRootNode() && gFastTreeSortPtr != nullptr)
     {
-        // printf("Time: %f\n", glfwGetTime());
-        int32_t x = 0;
         for (const auto& c : gFastTreeSortPtr->getBuffer())
         {
             int mouseX = gStatePtr->mouseX;
@@ -205,12 +245,9 @@ void RectNodeABC::searchForMouseDropLoc()
             if ((mouseX > mesh.gBox.pos.x) && (mouseX < mesh.gBox.pos.x + mesh.gBox.scale.x) &&
                 (mouseY > mesh.gBox.pos.y) && (mouseY < mesh.gBox.pos.y + mesh.gBox.scale.y))
             {
-                // gStatePtr->selectedId = gTreeStruct.getId();
-                // printf("%f Iter: %d Child with level: %d\n", glfwGetTime(), x, c->gTreeStruct.getLevel());
                 c->onItemsDrop();
                 break;
             }
-            x++;
         }
     }
 }

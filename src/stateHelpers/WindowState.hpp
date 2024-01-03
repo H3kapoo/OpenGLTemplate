@@ -27,5 +27,7 @@ struct WindowState
     int32_t dropCount{ 0 };
 
     treeHelpers::treeNodeId selectedId{ 0 };
+    treeHelpers::treeNodeId hoveredId{ 0 };
+    treeHelpers::treeNodeId prevHoveredId{ 0 };
 };
 }

@@ -8,7 +8,6 @@
 #include "treeHelpers/ConcreteNode.hpp"
 #include "inputHelpers/Types.hpp"
 #include "stateHelpers/WindowState.hpp"
-#include "textureHelpers/TextureHelper.hpp"
 #include "treeHelpers/TextNode.hpp"
 
 class GLFWwindow; /* Fwd declare to avoid include errors */
@@ -46,6 +45,7 @@ private:
     treeHelpers::ConcreteNode gExtractNode{ gBorderedVertPath, gBorderedFragPath };
 
     treeHelpers::TextNode gPathTextNode{ gTextVertPath, gTextFragPath };
+    treeHelpers::TextNode gStatusTextNode{ gTextVertPath, gTextFragPath };
 
     stateHelpers::WindowState gWindowState;
 
@@ -54,5 +54,4 @@ private:
 
     shaderHelpers::ShaderHelper& gShInstance;
     renderHelpers::RenderHelper& gRenderInstance;
-    textureHelpers::TextureHelper& gTexHelperInstance;
 };
