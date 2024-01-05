@@ -1,14 +1,20 @@
 #include <stdio.h>
 #include <functional>
+#include <fstream>
 
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
 
 #include "src/inputHelpers/InputHelper.hpp"
 #include "src/Application.hpp"
+#include "src/Unzipper.hpp"
 
-int main(int argc, char* argv[])
+int main(int, char**)
 {
+
+    unzip("src/unzip_test/file.zip", "src/unzip_test/unzipped_dir");
+    return 0;
+
     const int32_t windowWidth = 500;
     const int32_t windowHeight = 400;
 
@@ -46,6 +52,9 @@ int main(int argc, char* argv[])
         perror("GLEW failed to initialize\n");
         return false;
     }
+
+    /* Quick gpu info */
+    printf("GPU Vendor: %s\nGPU Renderer: %s\n", glGetString(GL_VENDOR), glGetString(GL_RENDERER));
 
     glfwSetWindowSizeLimits(window, minWidth, minHeight, maxWidth, maxHeight);
 

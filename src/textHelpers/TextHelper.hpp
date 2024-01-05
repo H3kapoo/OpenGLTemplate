@@ -29,6 +29,7 @@ private:
     TextHelper(const TextHelper&) = delete;
     TextHelper& operator=(const TextHelper&) = delete;
 
+    //TODO: Make it hot reloadable and unique
     std::map<std::string, LoadedFont> gFontPathToGenFont;
 };
 }

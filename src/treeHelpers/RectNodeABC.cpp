@@ -57,6 +57,23 @@ void RectNodeABC::updateFastTree()
 
 
 /**
+ * @brief Set node to be transparent to any events that might occur on it.
+ *
+ * Set node to be transparent to any events that might occur on it like hover,
+ * click, etc. The next valid node after this one will receive the event instead
+ *
+ * @note Currently this makes the node transparent to ALL events. In the future it will
+ *       be better to make it transparent only to certain events.
+ *
+ * @param value Boolean deciding if node should be transparent or not.
+ */
+void RectNodeABC::setEventTransparent(const bool value)
+{
+    gIsEventTransparent = value;
+}
+
+
+/**
  * @brief Append new children to this node.
  *
  * Appends new children to current node by setting appropriate depth level,
@@ -88,6 +105,13 @@ void RectNodeABC::emitEvent(const inputHelpers::Event& evt)
 {
     switch (evt)
     {
+    case inputHelpers::Event::WindowResize:
+        onWindowResize();
+        for (const auto& c : gFastTreeSortPtr->getBuffer())
+        {
+            c->onWindowResize();
+        }
+        break;
     case inputHelpers::Event::MouseButton:
         searchForMouseSelection();
         break;
@@ -101,7 +125,7 @@ void RectNodeABC::emitEvent(const inputHelpers::Event& evt)
     case inputHelpers::Event::ItemsDrop:
         //TODO: Bad design for now
         searchForMouseDropLoc();
-        onRenderDone();
+        onRenderDone(); //TODO: Why is this here?
         break;
     default:
         fprintf(stderr, "Unknown base event: %d\n", static_cast<int>(evt));
@@ -140,6 +164,8 @@ void RectNodeABC::searchForMouseSelection()
         int32_t x = 0;
         for (const auto& c : gFastTreeSortPtr->getBuffer())
         {
+            if (c->gIsEventTransparent) { continue; }
+
             int mouseX = gStatePtr->mouseX;
             int mouseY = gStatePtr->mouseY;
             auto& mesh = c->gMesh;
@@ -147,7 +173,6 @@ void RectNodeABC::searchForMouseSelection()
                 (mouseY > mesh.gBox.pos.y) && (mouseY < mesh.gBox.pos.y + mesh.gBox.scale.y))
             {
                 gStatePtr->selectedId = c->gTreeStruct.getId();
-                // printf("%f Iter: %d Child clicked with level: %d\n", glfwGetTime(), x, c->gTreeStruct.getLevel());
                 c->onMouseButton();
                 break;
             }
@@ -169,6 +194,8 @@ void RectNodeABC::searchForMouseHover()
         bool changeNeeded{ false };
         for (const auto& c : gFastTreeSortPtr->getBuffer())
         {
+            if (c->gIsEventTransparent) { continue; }
+
             int mouseX = gStatePtr->mouseX;
             int mouseY = gStatePtr->mouseY;
             auto& mesh = c->gMesh;
@@ -210,21 +237,6 @@ void RectNodeABC::searchForMouseHover()
             }
         }
     }
-
-    // printf("{%d} Prev hovered %d actuall %d\n", gTreeStruct.getId(), gStatePtr->prevHoveredId, gStatePtr->hoveredId);
-
-    // guaranteed parent already ran it's block
-    // if (gStatePtr->prevHoveredId == gTreeStruct.getId())
-    // {
-    //     // onMouseExit();
-    //     printf("Mouse exited {%d}\n", gTreeStruct.getId());
-    // }
-
-    // if (gStatePtr->hoveredId == gTreeStruct.getId())
-    // {
-    //     //     // onMouseEnter();
-    //     printf("Mouse entered {%d}\n", gTreeStruct.getId());
-    // }
 }
 
 
@@ -239,6 +251,8 @@ void RectNodeABC::searchForMouseDropLoc()
     {
         for (const auto& c : gFastTreeSortPtr->getBuffer())
         {
+            if (gIsEventTransparent) { continue; }
+
             int mouseX = gStatePtr->mouseX;
             int mouseY = gStatePtr->mouseY;
             auto& mesh = c->gMesh;

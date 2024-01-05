@@ -33,6 +33,8 @@ public:
     void enableFastTreeSort();
     void updateFastTree();
 
+    void setEventTransparent(const bool value);
+
     void append(RectNodeABC* child);
 
     void setStateSource(stateHelpers::WindowState* state);
@@ -48,6 +50,7 @@ protected:
     CHILD_MAY_IMPLEMENT(onItemsDrop);
     CHILD_MAY_IMPLEMENT(onMouseEnter);
     CHILD_MAY_IMPLEMENT(onMouseExit);
+    CHILD_MAY_IMPLEMENT(onWindowResize);
 
     shaderHelpers::ShaderHelper& gShInstance;
     stateHelpers::WindowState* gStatePtr{ nullptr };
@@ -57,6 +60,8 @@ private:
     void searchForMouseDropLoc();
 
     FastTreeSort* gFastTreeSortPtr{ nullptr };
+
+    bool gIsEventTransparent{false};
 public:
     /* Basic mesh */
     meshHelpers::RectMesh gMesh;

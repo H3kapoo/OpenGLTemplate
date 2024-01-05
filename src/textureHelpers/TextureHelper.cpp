@@ -55,8 +55,6 @@ TextureDataPtr TextureHelper::loadTexture(const std::string& filePath)
     TextureDataPtr newDataPtr = new TextureData;
     *newDataPtr = loadInternal(filePath);
 
-    printf("Loaded texture from: %s ", filePath.c_str());
-    printf("Channels: %d Width: %d Height: %d\n", newDataPtr->gNumChannels, newDataPtr->gWidth, newDataPtr->gWHeight);
     gTexturePathToGenId[filePath] = newDataPtr;
 
     return newDataPtr;
@@ -113,6 +111,9 @@ TextureData TextureHelper::loadInternal(const std::string& filePath)
     glGenerateMipmap(GL_TEXTURE_2D);
 
     stbi_image_free(data);
+
+    printf("Loaded texture from: %s ", filePath.c_str());
+    printf("Channels: %d Width: %d Height: %d\n", newData.gNumChannels, newData.gWidth, newData.gWHeight);
 
     return newData;
 }

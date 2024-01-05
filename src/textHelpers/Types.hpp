@@ -25,4 +25,12 @@ struct LoadedFont
 
 typedef LoadedFont* LoadedFontPtr;
 
+struct TextLine
+{
+    uint32_t startIdx{ 0 };
+    uint32_t endIdx{ 0 };
+    float length{ 0.0f };
+    float height{ 0.0f };
+};
+
 }

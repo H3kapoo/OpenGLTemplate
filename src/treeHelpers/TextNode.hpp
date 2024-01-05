@@ -1,6 +1,7 @@
 #pragma once
 
 #include <string>
+#include <vector>
 
 #include "ConcreteNode.hpp"
 #include "../textHelpers/TextHelper.hpp"
@@ -18,12 +19,17 @@ public:
     void registerOnItemsDrop(const MouseDropCb callback);
 
     void setText(const std::string& text);
+    void alignTextToCenter(const bool align);
 
 private:
     void onRenderDone();
 
     IMPL_OF_PARENT(onMouseButton);
     IMPL_OF_PARENT(onItemsDrop);
+    IMPL_OF_PARENT(onWindowResize);
+
+    void computeLines();
+    void computeLongestLine();
 
     /* Concept for text rendering, experimental */
     std::string gTextVertPath{ "src/assets/shaders/textV.glsl" };
@@ -36,7 +42,12 @@ private:
     textHelpers::LoadedFontPtr lfPtr{ nullptr };
 
     std::string gText;
+    bool gTextIsDirty{ false };
     uint32_t gLetterIdx{ 0 };
+
+    bool gCenterAlign{ false };
+    std::vector<textHelpers::TextLine> gTextLines;
+    float gLongestLine{ 0.0f };
 
     renderHelpers::RenderHelper& gRenderInstance;
     textHelpers::TextHelper& gTextHelperInstance;

@@ -1,5 +1,7 @@
 #include "TextNode.hpp"
 
+#include <algorithm>
+
 #include "../utils/CommonUtils.hpp"
 
 namespace treeHelpers
@@ -25,61 +27,119 @@ TextNode::TextNode(const std::string& vertPath, const std::string& fragPath)
     node.gStyle.gTextureId = lfPtr->id;
     node.gMesh.gUniKeeper.watch("uColor", &node.gMesh.gColor);
     node.gMesh.gUniKeeper.watch("uCharIndex", &gLetterIdx);
+
+    node.gMesh.gColor = utils::hexToVec4("#f1f1f1");
+
+    node.gMesh.gBox.scale.x = 32;
+    node.gMesh.gBox.scale.y = 32;
 }
 
 void TextNode::setText(const std::string& text)
 {
     gText = text;
 
+    /* This needs to be done outside of the constructor and after THIS node gets parented
+       otherwise Z will be incorrect. */
     const float textDepth = gTreeStruct.getLevel() + 0.5f; // slightly push it upwards
     node.gMesh.gBox.pos.z = textDepth;
-    node.gMesh.gBox.pos.x = gMesh.gBox.pos.x + 10;
-    node.gMesh.gBox.pos.y = gMesh.gBox.pos.y + 32;
-    node.gMesh.gBox.scale.x = 32;
-    node.gMesh.gBox.scale.y = 32;
 
-    node.gMesh.gColor = utils::hexToVec4("#d1d1d1");
+    gTextIsDirty = true;
 }
 
-void TextNode::onRenderDone()
+void TextNode::alignTextToCenter(const bool align)
 {
-    //TODO: Implement text batching
+    gCenterAlign = align;
+}
 
-    /* Try to render text on top now */
-    glDepthMask(GL_FALSE);
+void TextNode::computeLines()
+{
+    gTextLines.clear();
 
-    float bringDown = 32;
-    float x = gMesh.gBox.pos.x;
-    float y = gMesh.gBox.pos.y + bringDown;
+    const float maxX = gMesh.gBox.scale.x;
+    const float maxY = gMesh.gBox.scale.y;
+
+    float currentLength = 0;
+    int32_t maxHeight = 0;
+    uint32_t startIdx = 0;
+    uint32_t endIdx = 0;
     for (uint32_t i = 0; i < gText.length(); i++)
     {
         textHelpers::ASCIIChar& chData = lfPtr->data[gText[i]];
 
-        gLetterIdx = chData.charCode;
-
-        float xPos = x + chData.bearing.x;
-        float yPos = y - chData.bearing.y;
-        if (xPos > (gMesh.gBox.pos.x + gMesh.gBox.scale.x - 32))
+        float nextLength = currentLength + (chData.hAdvance >> 6);
+        if (nextLength > maxX)
         {
-            x = gMesh.gBox.pos.x;
-            y += bringDown;
-            xPos = x;
-            yPos = y - chData.bearing.y;
+            endIdx = i;
+            gTextLines.emplace_back(startIdx, endIdx, currentLength, maxHeight);
+            startIdx = i;
+            maxHeight = 0;
+            currentLength = (chData.hAdvance >> 6);
         }
+        else
+        {
+            maxHeight = std::max(maxHeight, chData.size.y);
+            currentLength = nextLength;
+        }
+    }
 
-        node.gMesh.gBox.pos.x = xPos;
-        node.gMesh.gBox.pos.y = yPos;
-        gRenderInstance.renderRectNode(node);
+    /* Put the line at the end that doesnt fill the parent entirely */
+    if (endIdx < gText.length())
+    {
+        gTextLines.emplace_back(endIdx, gText.length(), currentLength, maxHeight);
+    }
+}
 
-        x += (chData.hAdvance >> 6);
+void TextNode::onRenderDone()
+{
+    if (gTextIsDirty)
+    {
+        computeLines();
+        gTextIsDirty = false;
+    }
+    //TODO: Implement text batching
+    //TODO: This shall be recalculated only on text/font change since text wont change its size magically.
+
+    glDepthMask(GL_FALSE);
+
+    int32_t lineCount = gTextLines.size();
+    // const float centerY = (gMesh.gBox.scale.y - lineCount * 32) * 0.5f;
+
+    float heights = 0;
+    for (const auto& line : gTextLines)
+    {
+        heights += line.height;
+    }
+    // printf("Heights %f\n", heights);
+
+    int32_t lineNo = 1;
+    for (const auto& line : gTextLines)
+    {
+        float bringDown = 32 * lineNo++;
+        float x = gMesh.gBox.pos.x + (gMesh.gBox.scale.x - line.length) * 0.5f * gCenterAlign;
+        float y = gMesh.gBox.pos.y + bringDown + (gMesh.gBox.scale.y - heights) * 0.5f;
+        for (uint32_t i = line.startIdx; i < line.endIdx; i++)
+        {
+            textHelpers::ASCIIChar& chData = lfPtr->data[gText[i]];
+
+            gLetterIdx = chData.charCode;
+
+            float xPos = x + chData.bearing.x;
+            float yPos = y - chData.bearing.y;
+            /* Cast needed because text rendering with float positioning makes text blurry sometimes */
+            node.gMesh.gBox.pos.x = (int32_t)xPos;
+            node.gMesh.gBox.pos.y = (int32_t)yPos;
+            gRenderInstance.renderRectNode(node);
+
+            x += (chData.hAdvance >> 6);
+        }
     }
     glDepthMask(GL_TRUE);
 
-    // gRenderInstance.beginTextBatch(some settings);
-    // gRenderInstance.addToTextBatch(char);
-    // gRenderInstance.endTextBatch();
+}
 
-    // printf("Rendering is done!\n");
+void TextNode::onWindowResize()
+{
+    gTextIsDirty = true;
 }
 
 void TextNode::onMouseButton()
@@ -96,14 +156,6 @@ void TextNode::onItemsDrop()
     {
         gMouseDropCb(gStatePtr->dropCount, gStatePtr->droppedPaths);
     }
-    // we shall call drop callback
-    // printf("Im node %d and you dropped:\n", gTreeStruct.getId());
-    // gText.clear();
-    // for (int i = 0; i < gStatePtr->dropCount; i++)
-    // {
-    //     gText.append(gStatePtr->droppedPaths[i]);
-    //     gText.append(" - ");
-    // }
 }
 
 void TextNode::registerOnClick(const MouseClickCb callback)

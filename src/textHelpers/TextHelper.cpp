@@ -99,7 +99,7 @@ LoadedFontPtr TextHelper::loadFont(const std::string& fontPath, const int32_t fo
         ASCIIChar ch = {
             .charCode = uint32_t(i),
             .hAdvance = ftFace->glyph->advance.x,
-            .size = glm::ivec2(ftFace->glyph->bitmap.width, ftFace->glyph->bitmap.rows),
+            .size = glm::ivec2(ftFace->glyph->bitmap_left + ftFace->glyph->bitmap.width, ftFace->glyph->bitmap_top + ftFace->glyph->bitmap.rows),
             .bearing = glm::ivec2(ftFace->glyph->bitmap_left, ftFace->glyph->bitmap_top)
         };
 
@@ -109,6 +109,7 @@ LoadedFontPtr TextHelper::loadFont(const std::string& fontPath, const int32_t fo
     gFontPathToGenFont[fontKey] = font;
 
     printf("Loaded font texture {%d} from %s\n", font.id, fontPath.c_str());
+
     // unbind texture and free FTLIB resources
     glBindTexture(GL_TEXTURE_2D_ARRAY, 0);
     FT_Done_Face(ftFace);

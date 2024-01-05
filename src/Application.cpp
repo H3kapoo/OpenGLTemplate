@@ -56,11 +56,18 @@ void Application::keepRatio()
     textMesh.gBox.scale.y = fpMesh.gBox.scale.y - spacingPx * 2;
 
     /* 1st child of status */
-    auto& satusTextMesh = gStatusTextNode.gMesh;
-    satusTextMesh.gBox.pos.x = statusMesh.gBox.pos.x + spacingPx;
-    satusTextMesh.gBox.pos.y = statusMesh.gBox.pos.y + spacingPx;
-    satusTextMesh.gBox.scale.x = statusMesh.gBox.scale.x - spacingPx * 2;
-    satusTextMesh.gBox.scale.y = statusMesh.gBox.scale.y - spacingPx * 2;
+    auto& statusTextMesh = gStatusTextNode.gMesh;
+    statusTextMesh.gBox.pos.x = statusMesh.gBox.pos.x + spacingPx;
+    statusTextMesh.gBox.pos.y = statusMesh.gBox.pos.y + spacingPx;
+    statusTextMesh.gBox.scale.x = statusMesh.gBox.scale.x - spacingPx * 2;
+    statusTextMesh.gBox.scale.y = statusMesh.gBox.scale.y - spacingPx * 2;
+
+    /* 1st child of status */
+    auto& extractTextMesh = gExtractTextNode.gMesh;
+    extractTextMesh.gBox.pos.x = extractMesh.gBox.pos.x + spacingPx;
+    extractTextMesh.gBox.pos.y = extractMesh.gBox.pos.y + spacingPx;
+    extractTextMesh.gBox.scale.x = extractMesh.gBox.scale.x - spacingPx * 2;
+    extractTextMesh.gBox.scale.y = extractMesh.gBox.scale.y - spacingPx * 2;
 }
 
 void Application::setup()
@@ -132,6 +139,7 @@ void Application::setup()
 
     gFpNode.append(&gPathTextNode);
     gStatusNode.append(&gStatusTextNode); //TODO: Implement append such that we CANNOT APPEND OURSELVES
+    gExtractNode.append(&gExtractTextNode);
 
     /* Enable FTS for quicker click/mouse movement searches in the internal tree struct */
     gRootConcreteNode.enableFastTreeSort();
@@ -184,18 +192,14 @@ void Application::setup()
             gPathTextNode.setText(std::move(x));
         });
 
-    gPathTextNode.setText(std::filesystem::current_path());
+    gPathTextNode.alignTextToCenter(true);
+    gStatusTextNode.alignTextToCenter(true);
+    gExtractTextNode.alignTextToCenter(true);
+    gExtractTextNode.setEventTransparent(true);
+
+    gPathTextNode.setText("Drag snapshot zip here");
     gStatusTextNode.setText("Status: Ready");
-
-    // printf("Root level is: %d and z: %f\n", gRootConcreteNode.gTreeStruct.getLevel(), gRootConcreteNode.gMesh.gBox.pos.z);
-    // printf("Top child level is: %d and z: %f\n", gFpNode.gTreeStruct.getLevel(), gFpNode.gMesh.gBox.pos.z);
-    // printf("Bot child level is: %d and z: %f\n", gExtractNode.gTreeStruct.getLevel(), gExtractNode.gMesh.gBox.pos.z);
-    // printf("Top top child level is: %d and z: %f\n", gPathTextNode.gTreeStruct.getLevel(), gPathTextNode.gMesh.gBox.pos.z);
-
-    /* Quick gpu info */
-    const GLubyte* vendor = glGetString(GL_VENDOR); // Returns the vendor
-    const GLubyte* renderer = glGetString(GL_RENDERER); // Returns a hint to the model
-    printf("GPU Vendor: %s\nGPU Renderer: %s\n", vendor, renderer);
+    gExtractTextNode.setText("Extract");
 }
 
 void Application::loop()
@@ -219,6 +223,7 @@ void Application::loop()
     gRenderInstance.renderRectNode(gExtractNode);
     gRenderInstance.renderRectNode(gPathTextNode);
     gRenderInstance.renderRectNode(gStatusTextNode); //TODO: Avoid the possibility to render same node twice
+    gRenderInstance.renderRectNode(gExtractTextNode);
 }
 
 void Application::setTitle(const std::string& title)
@@ -250,6 +255,7 @@ void Application::onWindowResize(int width, int height)
     glViewport(0, 0, width, height);
 
     keepRatio();
+    gRootConcreteNode.emitEvent(inputHelpers::Event::WindowResize);
 }
 
 void Application::onButtonAction(int button, int action, int)

@@ -46,6 +46,7 @@ private:
 
     treeHelpers::TextNode gPathTextNode{ gTextVertPath, gTextFragPath };
     treeHelpers::TextNode gStatusTextNode{ gTextVertPath, gTextFragPath };
+    treeHelpers::TextNode gExtractTextNode{ gTextVertPath, gTextFragPath };
 
     stateHelpers::WindowState gWindowState;
 
