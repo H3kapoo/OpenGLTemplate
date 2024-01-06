@@ -1,10 +1,10 @@
-#include <xz/encode.hpp>
+#include "encode.hpp"
 
 #include <cerrno>
 #include <cstring>
 #include <lzma.h>
 
-#include <log.hpp>
+#include "../log.hpp"
 
 namespace {
 struct lzma_helper {
@@ -252,4 +252,4 @@ bool xz::compress(std::istream& istream, std::ostream& ostream) {
             return false;
         }
     }
-}s
+}
