@@ -34,6 +34,11 @@ TextNode::TextNode(const std::string& vertPath, const std::string& fragPath)
     node.gMesh.gBox.scale.y = 32;
 }
 
+void TextNode::setTextColor(const glm::vec4& color)
+{
+    node.gMesh.gColor = color;
+}
+
 void TextNode::setText(const std::string& text)
 {
     gText = text;

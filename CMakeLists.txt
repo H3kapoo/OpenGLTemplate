@@ -14,6 +14,7 @@ include_directories ("/usr/include/freetype2") # linux specific
 add_executable(${PROJECT_NAME}
     main.cpp
     src/Application.cpp
+    src/Unzipper.cpp
 
     # Temporary solution until a lib is built to link against
     src/vendor/xzDecompressor/xz/decode.cpp

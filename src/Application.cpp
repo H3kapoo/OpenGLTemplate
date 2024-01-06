@@ -13,6 +13,16 @@ Application::Application(GLFWwindow* windowHandle)
     , gRenderInstance{ renderHelpers::RenderHelper::get() }
 {}
 
+Application::~Application()
+{
+    /* Join the unzipping thread if its still alive somewhere so we dont get terminate exception at the end*/
+    if (gUnzipThread.joinable())
+    {
+        gUnzipThread.join();
+    }
+}
+
+
 void Application::keepRatio()
 {
     /* Root note */
@@ -62,7 +72,7 @@ void Application::keepRatio()
     statusTextMesh.gBox.scale.x = statusMesh.gBox.scale.x - spacingPx * 2;
     statusTextMesh.gBox.scale.y = statusMesh.gBox.scale.y - spacingPx * 2;
 
-    /* 1st child of status */
+    /* 1st child of extract */
     auto& extractTextMesh = gExtractTextNode.gMesh;
     extractTextMesh.gBox.pos.x = extractMesh.gBox.pos.x + spacingPx;
     extractTextMesh.gBox.pos.y = extractMesh.gBox.pos.y + spacingPx;
@@ -73,7 +83,7 @@ void Application::keepRatio()
 void Application::setup()
 {
     printf("Setup called\n");
-    setTitle("UnSnapshot C++ 1.0");
+    setTitle("UnSnapshot C++ " + gAppVersion);
 
     glfwGetWindowSize(gWindowHandle, &gWindowState.winWidth, &gWindowState.winHeight);
 
@@ -168,6 +178,48 @@ void Application::setup()
             gExtractNode.gStyle.gBorderColor = utils::hexToVec4("#349798");
             gExtractNode.gStyle.gBorderSize.x -= btnPushAmt;
             gExtractNode.gStyle.gBorderSize.z -= btnPushAmt;
+
+            if (gExtractInputPath.empty() || gThreadRunning) { return; }
+
+            gStatusTextNode.setText("Status: Unzipping..");
+            gStatusTextNode.setTextColor(utils::hexToVec4("#e5bc03"));
+
+            /* Join thread before beggining a new one so we dont get terminate exception */
+            if (gUnzipThread.joinable())
+            {
+                gUnzipThread.join();
+                gThreadRunning = false;
+            }
+
+            gThreadRunning = true;
+            gThreadStartTime = glfwGetTime();
+            gUnzipThread = std::thread(&unsnapshot::UnSnapshot::unSnap, &a, gExtractInputPath, gExtractOutputPath,
+                [this](const float progress)
+                {
+                    /*Note: This function must be a super quick one so the unzipping thread doesnt wait too much.
+                     At most use it to report something to the user and then bail out. */
+
+                    char buffer[6];
+                    std::snprintf(buffer, sizeof(buffer), "%.2f", progress);
+
+                    gStatusTextNode.setText("Status: Unzipping.. " + std::string{ buffer } + "%");
+                },
+                [this](const bool status, const std::string& err)
+                {
+                    printf("Status is %d: %s\n", status, err.c_str());
+                    if (status)
+                    {
+                        gStatusTextNode.setTextColor(utils::hexToVec4("#71da15"));
+                        gStatusTextNode.setText("Status: Done");
+                    }
+                    else
+                    {
+                        gStatusTextNode.setTextColor(utils::hexToVec4("#ef5521"));
+                        gStatusTextNode.setText("Status: " + err);
+                    }
+
+                    gThreadRunning = false;
+                });
         });
 
     gExtractNode.registerOnMouseEnter([this](int, int)
@@ -182,14 +234,27 @@ void Application::setup()
 
     gPathTextNode.registerOnItemsDrop([this](int32_t count, const char** paths)
         {
-            std::string x;
-            for (int i = 0; i < count; i++)
+            if (gThreadRunning)
             {
-                x.append(paths[i]);
-                x.append(" - ");
-                printf("Path dropped: %s\n", paths[i]);
+                gStatusTextNode.setTextColor(utils::hexToVec4("#ef5521"));
+                gStatusTextNode.setText("Status: Busy..");
+                return;
             }
-            gPathTextNode.setText(std::move(x));
+
+            if (count > 1)
+            {
+                gStatusTextNode.setTextColor(utils::hexToVec4("#f1f1f1"));
+                gStatusTextNode.setText("Status: Drop only one zip please");
+                return;
+            }
+
+            gExtractInputPath.assign(paths[0]);
+            printf("Path dropped: %s\n", paths[0]);
+
+            gPathTextNode.setText(gExtractInputPath);
+            gStatusTextNode.setTextColor(utils::hexToVec4("#f1f1f1"));
+            gStatusTextNode.setText("Status: Ready");
+
         });
 
     gPathTextNode.alignTextToCenter(true);
@@ -200,6 +265,8 @@ void Application::setup()
     gPathTextNode.setText("Drag snapshot zip here");
     gStatusTextNode.setText("Status: Ready");
     gExtractTextNode.setText("Extract");
+
+    gStatusTextNode.setTextColor(utils::hexToVec4("#f1f1f1"));
 }
 
 void Application::loop()
@@ -213,6 +280,20 @@ void Application::loop()
             "src/assets/shaders/textF.glsl");
         gReloadShader = false;
         gPathTextNode.setText("Reloaded..");
+    }
+
+    /* NOTE: This DOESN'T KILL the thread, it's just a toy design. Most of the time this will not
+       timeout, but in the future we might wanna handle it properly.
+       NOTE: If the thread timer timesout at X and the thread finishes just some X+1 time later,
+       UI will change from 'Timeout' to 'Done' essentially creating a kind of fake timeout. It's okay. */
+    if (gThreadRunning && (glfwGetTime() - gThreadStartTime) >= gThreadKillTimeoutSec)
+    {
+        fprintf(stderr, "Unzip thread did not finish in %fs. Kill it\n", gThreadKillTimeoutSec);
+        if (gUnzipThread.joinable()) { gUnzipThread.join(); }
+
+        gThreadRunning = false;
+        gStatusTextNode.setTextColor(utils::hexToVec4("#9e0202"));
+        gStatusTextNode.setText("Status: Timeout");
     }
 
     /* Render stuff, order independent (depends only on Z) */

@@ -20,6 +20,7 @@ public:
 
     void setText(const std::string& text);
     void alignTextToCenter(const bool align);
+    void setTextColor(const glm::vec4& color);
 
 private:
     void onRenderDone();

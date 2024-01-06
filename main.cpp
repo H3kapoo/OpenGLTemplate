@@ -7,13 +7,11 @@
 
 #include "src/inputHelpers/InputHelper.hpp"
 #include "src/Application.hpp"
-#include "src/Unzipper.hpp"
+// #include "src/Unzipper.hpp"
+#include "src/vendor/stb_image.h"
 
 int main(int, char**)
 {
-
-    unzip("src/unzip_test/file.zip", "src/unzip_test/unzipped_dir");
-    return 0;
 
     const int32_t windowWidth = 500;
     const int32_t windowHeight = 400;
@@ -35,7 +33,7 @@ int main(int, char**)
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
     /* Create mock window just to succeed initializing glew*/
-    GLFWwindow* window = glfwCreateWindow(windowWidth, windowHeight, "MyWindow", NULL, NULL);
+    GLFWwindow* window = glfwCreateWindow(windowWidth, windowHeight, "UnSnapshot C++", NULL, NULL);
     if (window == NULL)
     {
         perror("Failed to create glew initializing window\n");
@@ -57,6 +55,18 @@ int main(int, char**)
     printf("GPU Vendor: %s\nGPU Renderer: %s\n", glGetString(GL_VENDOR), glGetString(GL_RENDERER));
 
     glfwSetWindowSizeLimits(window, minWidth, minHeight, maxWidth, maxHeight);
+
+    GLFWimage iconImage;
+    int chNr;
+    unsigned char* iconData = stbi_load("/home/hekapoo/Downloads/thumbs_64_trans.png",
+        &iconImage.width, &iconImage.height, &chNr, 0);
+    if (!iconData)
+    {
+        fprintf(stderr, "Failed to load icon\n");
+        return 0;
+    }
+    iconImage.pixels = iconData;
+    glfwSetWindowIcon(window, 1, &iconImage);
 
     Application app(window);
     app.setup();
@@ -103,4 +113,6 @@ int main(int, char**)
     */
     glfwDestroyWindow(window);
     glfwTerminate();
+
+    stbi_image_free(iconData);
 }

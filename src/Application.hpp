@@ -1,6 +1,7 @@
 #pragma once
 
 #include <stdio.h>
+#include <thread>
 
 #include "renderHelpers/RenderHelper.hpp"
 #include "shaderHelpers/ShaderHelper.hpp"
@@ -10,12 +11,16 @@
 #include "stateHelpers/WindowState.hpp"
 #include "treeHelpers/TextNode.hpp"
 
+#include "Unzipper.hpp"
+
 class GLFWwindow; /* Fwd declare to avoid include errors */
 
 class Application /* This shall later inherit from IApplication for better reusability */
 {
 public:
     Application(GLFWwindow* windowHandle);
+    ~Application();
+
     void setup();
     void loop();
     void onKeyPress(int key, int sc, int action, int mods);
@@ -48,10 +53,22 @@ private:
     treeHelpers::TextNode gStatusTextNode{ gTextVertPath, gTextFragPath };
     treeHelpers::TextNode gExtractTextNode{ gTextVertPath, gTextFragPath };
 
+    unsnapshot::UnSnapshot a;
+    std::string gExtractInputPath;
+    std::string gExtractOutputPath{ "src/unzip_test/extracted/output" };
+
     stateHelpers::WindowState gWindowState;
 
+    std::string gAppVersion{ "1.0.0" };
+
     bool gReloadShader{ false };
+
     GLFWwindow* gWindowHandle{ nullptr };
+
+    std::thread gUnzipThread;
+    bool gThreadRunning{ false };
+    double gThreadKillTimeoutSec{ 5.0f };
+    double gThreadStartTime{ 0.0f };
 
     shaderHelpers::ShaderHelper& gShInstance;
     renderHelpers::RenderHelper& gRenderInstance;
