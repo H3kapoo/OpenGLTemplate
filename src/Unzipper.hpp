@@ -28,11 +28,8 @@ public:
 private:
     //TODO: use std::fs::path instead of plain strings. windows reasons
     bool handleParentLine(std::ifstream& snapshotFileList, const std::string& maybeParentLine, char* readBuffer);
-
-    bool extractSyslogFromZip(const std::string& zipName, const std::string& xzFileName, const Path& outputPath, const std::string& newName);
-
-    void extractPmSyslogs(const Path& unzippedSnapshotPath, const std::string& parentName,
-        const std::string& childName, const Path& outputPath);
+    bool helperExtractSyslogFrom(const std::string& zipName, const std::string& xzFileName, const Path& outputPath,
+        const std::string& newName);
     void extractSyslogsFrom(const Path& unzippedSnapshotPath, const std::string& parentName,
         const std::string& childName, const Path& outputPath);
     void extractIMS2From(const Path& unzippedSnapshotPath, const std::string& parentZip,

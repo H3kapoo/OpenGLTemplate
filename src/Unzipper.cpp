@@ -3,54 +3,7 @@
 namespace unsnapshot
 {
 
-
-
-// void UnSnapshot::extractPmSyslogs(const Path& unzippedSnapshotPath, const std::string& parentName,
-//     const std::string& childName, const Path& outputPath)
-// {
-//     /* Pm zips can contain both runtime_BTSOM.log.xz and startup_BTSOM.log.xz */
-//     printf("PM SYSLOGS FOUND %s\n", childName.c_str());
-
-//     bool failedBoth = true;
-//     std::string syslogPmName = "startup_BTSOM.log.xz";
-
-//     auto splittedChildNmae = split(childName, '_');
-//     splittedChildNmae.erase(splittedChildNmae.begin()); // remove beginning item
-//     splittedChildNmae.erase(splittedChildNmae.end() - 1); // remove end item
-//     auto partialOutputName = join(splittedChildNmae, '_') + ".txt"; // add name & extension after xz unzip
-
-//     const Path extractXZFromPath = gTempPath / childName;
-
-//     /* Try to extract startup first */
-//     try
-//     {
-//         elz::extractFile(extractXZFromPath, syslogPmName, gTempPath);
-//     }
-//     catch (const std::exception& e)
-//     {
-//         fprintf(stderr, "Something happened unzipping: -> \"%s\" FROM \"%s\"\n -> what(): %s\n",
-//             syslogPmName.c_str(), extractXZFromPath.string().c_str(), e.what());
-//     }
-
-//     /* Get syslog.txt from syslog.xz */
-//     const Path xzInFilePath = gTempPath / syslogPmName;
-//     const Path xzOutFilePath = outputPath / ("startup_" + partialOutputName);
-//     std::ifstream inFile(xzInFilePath, std::ios::binary);
-//     std::ofstream outFile(xzOutFilePath, std::ios::binary);
-
-//     if (!xz::decompress(inFile, outFile))
-//     {
-//         fprintf(stderr, "Faied to decompress XZ: %s\n", xzInFilePath.string().c_str());
-//         inFile.close();
-//         outFile.close();
-//         return failBye("Weird failure of unzip PM XZ");
-//     }
-
-//     inFile.close();
-//     outFile.close();
-// }
-
-bool UnSnapshot::extractSyslogFromZip(const std::string& zipName, const std::string& xzFileName,
+bool UnSnapshot::helperExtractSyslogFrom(const std::string& zipName, const std::string& xzFileName,
     const Path& outputPath, const std::string& newName)
 {
     const Path extractXZFromPath = gTempPath / zipName;
@@ -112,32 +65,32 @@ void UnSnapshot::extractSyslogsFrom(const Path& unzippedSnapshotPath, const std:
     /* Get syslog.xz from syslog.zip */
     if (childName.find("startup") != std::string::npos)
     {
-        if (!extractSyslogFromZip(childName, "startup_BTSOM.log.xz", outputPath, "startup_BTSOM.txt"))
+        if (!helperExtractSyslogFrom(childName, "startup_BTSOM.log.xz", outputPath, "startup_BTSOM.txt"))
         {
             return failBye("Weird failure of unzip XZ");
         }
     }
     else if (childName.find("runtime") != std::string::npos)
     {
-        if (!extractSyslogFromZip(childName, "runtime_BTSOM.log.xz", outputPath, "runtime_BTSOM.txt"))
+        if (!helperExtractSyslogFrom(childName, "runtime_BTSOM.log.xz", outputPath, "runtime_BTSOM.txt"))
         {
             return failBye("Weird failure of unzip XZ");
         }
     }
     else if (childName.find("pm") != std::string::npos)
     {
-        auto a = split(childName, '_');
-        a.erase(a.begin());
-        a.erase(a.end() - 1);
-        auto b = join(a, '_');
+        auto splittedName = split(childName, '_');
+        splittedName.erase(splittedName.begin());
+        splittedName.erase(splittedName.end() - 1);
+        auto newNamePrefix = join(splittedName, '_');
 
         bool bothFailed = true;
-        if (extractSyslogFromZip(childName, "startup_BTSOM.log.xz", outputPath, b + "_startup_BTSOM.txt"))
+        if (helperExtractSyslogFrom(childName, "startup_BTSOM.log.xz", outputPath, newNamePrefix + "_startup_BTSOM.txt"))
         {
             bothFailed = false;
         }
 
-        if (extractSyslogFromZip(childName, "runtime_BTSOM.log.xz", outputPath, b + "_runtime_BTSOM.txt"))
+        if (helperExtractSyslogFrom(childName, "runtime_BTSOM.log.xz", outputPath, newNamePrefix + "_runtime_BTSOM.txt"))
         {
             bothFailed = false;
         }
