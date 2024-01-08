@@ -59,7 +59,7 @@ private:
 
     stateHelpers::WindowState gWindowState;
 
-    std::string gAppVersion{ "1.0.0" };
+    std::string gAppVersion{ "1.1.0" }; //TODO: add dynamic version update
 
     bool gReloadShader{ false };
 

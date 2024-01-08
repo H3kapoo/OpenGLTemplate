@@ -61,7 +61,6 @@ void TextNode::computeLines()
     gTextLines.clear();
 
     const float maxX = gMesh.gBox.scale.x;
-    const float maxY = gMesh.gBox.scale.y;
 
     float currentLength = 0;
     int32_t maxHeight = 0;
@@ -105,9 +104,6 @@ void TextNode::onRenderDone()
     //TODO: This shall be recalculated only on text/font change since text wont change its size magically.
 
     glDepthMask(GL_FALSE);
-
-    int32_t lineCount = gTextLines.size();
-    // const float centerY = (gMesh.gBox.scale.y - lineCount * 32) * 0.5f;
 
     float heights = 0;
     for (const auto& line : gTextLines)

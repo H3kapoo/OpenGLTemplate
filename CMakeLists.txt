@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.22)
-project(UnSnapshot_v1.0.0)
+project(UnSnapshot_v1.1.0)
 
 if(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
     #Linux-specific code or configuration here
