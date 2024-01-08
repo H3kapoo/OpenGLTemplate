@@ -2,12 +2,13 @@
 #include <functional>
 #include <fstream>
 
+#define GLEW_STATIC
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
 
 #include "src/inputHelpers/InputHelper.hpp"
 #include "src/Application.hpp"
-// #include "src/Unzipper.hpp"
+
 #include "src/vendor/stb_image.h"
 
 int main(int, char**)

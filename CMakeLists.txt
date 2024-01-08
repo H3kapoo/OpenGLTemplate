@@ -49,6 +49,7 @@ elseif(${CMAKE_SYSTEM_NAME} MATCHES "Windows")
     include_directories ("C:/Users/boje/Desktop/helperz/cpp/deps/glfw-3.3.8.bin.WIN64/include")
     include_directories ("C:/Users/boje/Desktop/helperz/cpp/deps/lzma/include")
     include_directories ("C:/Users/boje/Desktop/helperz/cpp/deps/freetype-2.13.2/include")
+    include_directories ("C:/Users/boje/Desktop/helperz/cpp/deps/g-truc-glm-b71a83")
 
     add_executable(${PROJECT_NAME}
         main.cpp
@@ -85,7 +86,7 @@ elseif(${CMAKE_SYSTEM_NAME} MATCHES "Windows")
     # there is a problem with statically linking stdlibc++ and libgcc on mingw with c++23
     target_link_options(${PROJECT_NAME} PRIVATE -static-libstdc++ -static-libgcc -static C:/MinGW/x86_64-w64-mingw32/lib/libwinpthread.a)
 
-    target_link_libraries(${PROJECT_NAME}  glew32 opengl32  gdi32 user32 kernel32 glfw3  freetype elzip lzma)
+    target_link_libraries(${PROJECT_NAME} glew32 opengl32 gdi32 user32 kernel32 glfw3 freetype elzip lzma)
 
 # If the operating system is not recognized
 else()
