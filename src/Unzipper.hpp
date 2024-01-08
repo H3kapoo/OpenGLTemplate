@@ -28,6 +28,11 @@ public:
 private:
     //TODO: use std::fs::path instead of plain strings. windows reasons
     bool handleParentLine(std::ifstream& snapshotFileList, const std::string& maybeParentLine, char* readBuffer);
+
+    bool extractSyslogFromZip(const std::string& zipName, const std::string& xzFileName, const Path& outputPath, const std::string& newName);
+
+    void extractPmSyslogs(const Path& unzippedSnapshotPath, const std::string& parentName,
+        const std::string& childName, const Path& outputPath);
     void extractSyslogsFrom(const Path& unzippedSnapshotPath, const std::string& parentName,
         const std::string& childName, const Path& outputPath);
     void extractIMS2From(const Path& unzippedSnapshotPath, const std::string& parentZip,
@@ -36,6 +41,12 @@ private:
     void okBye();
     void failBye(const std::string& err);
     void reportProgress(const float progress);
+
+    std::vector<std::string> split(const std::string& str, const char sep);
+    std::string join(const std::vector<std::string>& strVec, const char sep);
+
+    std::regex gIms2Regex{ "(BTS[0-9]{1,9}_([1-9])011_(pm_[1-9]_)*im_snapshot.ims2)" };
+    std::regex gSyslogRegex{ "(BTS[0-9]{1,9}_([1-9])011_(startup|runtime).zip)|(BTS[0-9]{1,9}_([1-9])011_pm_([1-9])_syslog.zip)" };
 
     Path gUnzippedSnapshotPath;
     Path gSyslogsOutputPath;
