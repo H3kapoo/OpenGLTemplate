@@ -3,6 +3,7 @@
 #include <cstdint>
 #include <vector>
 
+#define GLEW_STATIC
 #include <GL/glew.h>
 
 #include "Types.hpp"

@@ -55,7 +55,7 @@ private:
 
     unsnapshot::UnSnapshot a;
     std::string gExtractInputPath;
-    std::string gExtractOutputPath{ "src/unzip_test/extracted/output" };
+    std::string gExtractOutputPath;
 
     stateHelpers::WindowState gWindowState;
 
@@ -67,7 +67,7 @@ private:
 
     std::thread gUnzipThread;
     bool gThreadRunning{ false };
-    double gThreadKillTimeoutSec{ 5.0f };
+    double gThreadKillTimeoutSec{ 30.0f };
     double gThreadStartTime{ 0.0f };
 
     shaderHelpers::ShaderHelper& gShInstance;

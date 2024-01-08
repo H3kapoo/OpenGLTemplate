@@ -3,6 +3,7 @@
 #include <filesystem>
 
 #include <GLFW/glfw3.h>
+#define GLEW_STATIC
 #include <GL/glew.h>
 
 #include "utils/CommonUtils.hpp"
@@ -249,6 +250,7 @@ void Application::setup()
             }
 
             gExtractInputPath.assign(paths[0]);
+            gExtractOutputPath = (std::filesystem::path(gExtractInputPath).parent_path() / std::string("output")).string();
             printf("Path dropped: %s\n", paths[0]);
 
             gPathTextNode.setText(gExtractInputPath);

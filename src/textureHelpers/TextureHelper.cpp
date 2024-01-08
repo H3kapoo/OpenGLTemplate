@@ -1,5 +1,6 @@
 #include "TextureHelper.hpp"
 
+#define GLEW_STATIC
 #include <GL/glew.h>
 
 #define STB_IMAGE_IMPLEMENTATION

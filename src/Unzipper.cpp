@@ -11,23 +11,23 @@ void UnSnapshot::extractSyslogsFrom(const Path& unzippedSnapshotPath, const std:
     Path parentNamePath = unzippedSnapshotPath / parentName;
     if (!std::filesystem::exists(parentNamePath))
     {
-        fprintf(stderr, "Parent zip %s doesnt exist!\n", parentNamePath.c_str());
+        fprintf(stderr, "Parent zip %s doesnt exist!\n", parentNamePath.string().c_str());
         return failBye("Unlikely FiNoFound failure");
     }
 
-    // get syslog.zip from part_x.zip
+    /* Get syslog.zip from part_x.zip */
     try
     {
         elz::extractFile(parentNamePath, childName, gTempPath);
     }
     catch (const std::exception& e)
     {
-        fprintf(stderr, "Something happened unzipping:\n -> \"%s\"\n--from-- \n\"%s\"\n -> what(): %s\n",
-            childName.c_str(), parentNamePath.c_str(), e.what());
+        fprintf(stderr, "Something happened unzipping:  \"%s\" FROM \"%s\"\n -> what(): %s\n",
+            childName.c_str(), parentNamePath.string().c_str(), e.what());
         return failBye("Weird failure of unzip");
     }
 
-    // get syslog.xz from syslog.zip
+    /* Get syslog.xz from syslog.zip */
     std::string syslogHint = "NO_HINT";
     if (childName.find("startup") != std::string::npos)
     {
@@ -45,28 +45,31 @@ void UnSnapshot::extractSyslogsFrom(const Path& unzippedSnapshotPath, const std:
     }
     catch (const std::exception& e)
     {
-        fprintf(stderr, "Something happened unzipping LOG.XZ:\n -> \"%s\"\n--from-- \n\"%s\"\n -> what(): %s\n",
-            syslogHint.c_str(), extractXZFromPath.c_str(), e.what());
+        fprintf(stderr, "Something happened unzipping LOG.XZ: -> \"%s\" FROM \"%s\"\n -> what(): %s\n",
+            syslogHint.c_str(), extractXZFromPath.string().c_str(), e.what());
         return failBye("Weird failure of unzip");
     }
 
-    // get syslog.txt from syslog.xz
+    /* Get syslog.txt from syslog.xz */
     const Path xzInFilePath = gTempPath / syslogHint;
     const Path xzOutFilePath = outputPath / (syslogHint.substr(0, syslogHint.size() - 7) + ".txt");
     std::ifstream inFile(xzInFilePath);
     std::ofstream outFile(xzOutFilePath);
 
-    printf("Paths: in: %s \n out: %s\n", xzInFilePath.c_str(), xzOutFilePath.c_str());
+    printf("Paths: in: %s \n out: %s\n", xzInFilePath.string().c_str(), xzOutFilePath.string().c_str());
     if (!xz::decompress(inFile, outFile) != EXIT_SUCCESS)
     {
-        fprintf(stderr, "Faied to decompress XZ: %s\n", xzInFilePath.c_str());
+        fprintf(stderr, "Faied to decompress XZ: %s\n", xzInFilePath.string().c_str());
+        inFile.close();
+        outFile.close();
         return failBye("Weird failure of unzip");
     }
 
+    inFile.close();
+    outFile.close();
     printf("%s\n%s\n", parentName.c_str(), childName.c_str());
 }
 
-//TODO: use std::fs::path instead of plain strings. windows reasons
 void UnSnapshot::extractIMS2From(const Path& unzippedSnapshotPath, const std::string& parentName,
     const std::string& childName, const Path& outputPath)
 {
@@ -75,19 +78,19 @@ void UnSnapshot::extractIMS2From(const Path& unzippedSnapshotPath, const std::st
     Path parentNamePath = unzippedSnapshotPath / parentName;
     if (!std::filesystem::exists(parentNamePath))
     {
-        fprintf(stderr, "Parent zip %s doesnt exist!\n", parentNamePath.c_str());
+        fprintf(stderr, "Parent zip %s doesnt exist!\n", parentNamePath.string().c_str());
         return failBye("Weird failure of unzip");
     }
 
-    // get file.ims2 from part_x.zip
+    /* Get file.ims2 from part_x.zip */
     try
     {
         elz::extractFile(parentNamePath, childName, outputPath);
     }
     catch (const std::exception& e)
     {
-        fprintf(stderr, "Something happened unzipping:\n -> \"%s\"\n--from-- \n\"%s\"\n -> what(): %s\n",
-            childName.c_str(), parentNamePath.c_str(), e.what());
+        fprintf(stderr, "Something happened unzipping: \"%s\" FROM \"%s\"\n -> what(): %s\n",
+            childName.c_str(), parentNamePath.string().c_str(), e.what());
         return failBye("Weird failure of unzip");
     }
 
@@ -103,24 +106,24 @@ bool UnSnapshot::handleParentLine(std::ifstream& snapshotFileList, const std::st
     std::string maybePatternMatch;
     maybePatternMatch.reserve(BUFF_CAP);
 
-    // go down the lines to find a pattern
+    /* Go down the lines to find a pattern */
     while (!snapshotFileList.eof())
     {
         snapshotFileList.getline(readBuffer, BUFF_CAP, '\n');
         maybePatternMatch = readBuffer;
 
-        // if the line is empty, means we are at a border between end of parent contents and start of next parent contents
-        // so it's impossible to have a match here. Exit
+        /* If the line is empty, means we are at a border between end of parent contents and start of next parent contents
+           so it's impossible to have a match here. Exit */
         if (maybePatternMatch.empty()) { return false; }
 
-        // extract the syslog file from the /parent/zip/ location
+        /* Extract the ims2 file from the /parent/zip/ location */
         if (std::regex_search(maybePatternMatch, match, syslog_reg))
         {
             extractSyslogsFrom(gUnzippedSnapshotPath, maybeParentLine.substr(0, maybeParentLine.size() - 1), match[0].str(), gSyslogsOutputPath);
             return true;
         }
 
-        // extract the ims2 file from the /parent/zip/ location
+        /* Extract the ims2 file from the /parent/zip/ location */
         if (std::regex_search(maybePatternMatch, match, ims2_reg))
         {
             extractIMS2From(gUnzippedSnapshotPath, maybeParentLine.substr(0, maybeParentLine.size() - 1), match[0].str(), gSyslogsOutputPath);
@@ -152,6 +155,7 @@ void UnSnapshot::failBye(const std::string& err)
 
         gDoneCallback(false, err);
         gDoneCallback = nullptr;
+        gProgressCallback = nullptr;
     }
 }
 
@@ -177,8 +181,8 @@ void UnSnapshot::unSnap(const Path& inPath, const Path& outPath, const UnSnapsho
     }
     catch (const std::exception& e)
     {
-        fprintf(stderr, "Something happened unzipping big snapshot:\n -> \"%s\"\n -> what(): %s\n",
-            inPath.c_str(), e.what());
+        fprintf(stderr, "Something happened unzipping big snapshot: \"%s\"\n -> what(): %s\n",
+            inPath.string().c_str(), e.what());
         return failBye("Unzip failure");
     }
     reportProgress(10.0f);
@@ -190,7 +194,8 @@ void UnSnapshot::unSnap(const Path& inPath, const Path& outPath, const UnSnapsho
     std::ifstream snapshotFileList(snapshotFileListPath);
     if (snapshotFileList.fail() || snapshotFileList.bad())
     {
-        fprintf(stderr, "File couldn't be found at 1st level of zip or loaded %s\n", snapshotFileListPath.c_str());
+        fprintf(stderr, "File couldn't be found at 1st level of zip or loaded %s\n", snapshotFileListPath.string().c_str());
+        snapshotFileList.close();
         return failBye("snapshot_file_list missing");
     }
     reportProgress(20.0f);
@@ -217,6 +222,7 @@ void UnSnapshot::unSnap(const Path& inPath, const Path& outPath, const UnSnapsho
         }
     }
 
+    snapshotFileList.close();
     reportProgress(100.0f);
     okBye();
 }

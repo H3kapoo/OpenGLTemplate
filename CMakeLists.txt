@@ -1,35 +1,93 @@
 cmake_minimum_required(VERSION 3.22)
-project(simpleUI)
+project(UnSnapshot_v1.0.0)
 
-set(CMAKE_CXX_STANDARD 23)
-set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra -g") # debug mode
+if(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
+    #Linux-specific code or configuration here
+    message(STATUS "Configuring for Linux")
+    
+    set(CMAKE_CXX_STANDARD 23)
+    # set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra -g") # debug mode
+    set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra -O2") # debug mode
 
-#valgrind --tool=massif ./hkNode 
-#ms_print massif.out.454065 > masssif.txt
+    set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/../debug) 
 
-set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/../debug) 
+    set(FT_INCLUDE_PATH_DIRECTORY "/usr/local/include/freetype2/")
 
-# include_directories ("/usr/include/freetype2") # linux specific
-include_directories ("/usr/local/include/freetype2/") # linux specific
+    include_directories (${FT_INCLUDE_PATH_DIRECTORY})
 
-add_executable(${PROJECT_NAME}
-    main.cpp
-    src/Application.cpp
-    src/Unzipper.cpp
+    add_executable(${PROJECT_NAME}
+        main.cpp
+        src/Application.cpp
+        src/Unzipper.cpp
 
-    # Temporary solution until a lib is built to link against
-    src/vendor/xzDecompressor/xz/decode.cpp
-)
+        # Temporary solution until a lib is built to link against
+        src/vendor/xzDecompressor/xz/decode.cpp
+    )
 
-add_subdirectory(src/shaderHelpers)
-add_subdirectory(src/meshHelpers)
-add_subdirectory(src/renderHelpers)
-add_subdirectory(src/inputHelpers)
-add_subdirectory(src/treeHelpers)
-add_subdirectory(src/textureHelpers)
-add_subdirectory(src/utils)
-add_subdirectory(src/textHelpers)
-add_subdirectory(src/vendor)
+    add_subdirectory(src/shaderHelpers)
+    add_subdirectory(src/meshHelpers)
+    add_subdirectory(src/renderHelpers)
+    add_subdirectory(src/inputHelpers)
+    add_subdirectory(src/treeHelpers)
+    add_subdirectory(src/textureHelpers)
+    add_subdirectory(src/utils)
+    add_subdirectory(src/textHelpers)
+    add_subdirectory(src/vendor)
 
-# linux specific
-target_link_libraries(${PROJECT_NAME} glfw GLEW GL X11 pthread Xrandr dl freetype elzip lzma)
+    target_link_libraries(${PROJECT_NAME} glfw GLEW GL X11 pthread Xrandr dl freetype elzip lzma)
+
+elseif(${CMAKE_SYSTEM_NAME} MATCHES "Windows")
+    # Windows-specific code or configuration here
+
+    set(CMAKE_CXX_STANDARD 20)
+    # set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra -g") # debug mode
+    set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra -O2")
+
+    set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/../debug) 
+
+    include_directories ("C:/Users/boje/Desktop/helperz/cpp/deps/glew_source/glew-2.1.0/include")
+    include_directories ("C:/Users/boje/Desktop/helperz/cpp/deps/glfw-3.3.8.bin.WIN64/include")
+    include_directories ("C:/Users/boje/Desktop/helperz/cpp/deps/lzma/include")
+    include_directories ("C:/Users/boje/Desktop/helperz/cpp/deps/freetype-2.13.2/include")
+
+    add_executable(${PROJECT_NAME}
+        main.cpp
+        src/Application.cpp
+        src/Unzipper.cpp
+        
+        # Temporary solution until a lib is built to link against
+        src/vendor/xzDecompressor/xz/decode.cpp
+        )
+
+    add_subdirectory(src/shaderHelpers)
+    add_subdirectory(src/meshHelpers)
+    add_subdirectory(src/renderHelpers)
+    add_subdirectory(src/inputHelpers)
+    add_subdirectory(src/treeHelpers)
+    add_subdirectory(src/textureHelpers)
+    add_subdirectory(src/utils)
+    add_subdirectory(src/textHelpers)
+    add_subdirectory(src/vendor)
+
+    set(GLEW_LIBRARY_PATH_DIRECTORY "C:/Users/boje/Desktop/helperz/cpp/deps/glew_source/glew-2.1.0/build/cmake/build/lib")
+    set(GLFW_LIBRARY_PATH_DIRECTORY "C:/Users/boje/Desktop/helperz/cpp/deps/glfw-3.3.8.bin.WIN64/lib-mingw-w64")
+    set(LZMA_LIBRARY_PATH_DIRECTORY "C:/Users/boje/Desktop/helperz/cpp/deps/lzma/bin_x86-64")
+    set(FT_LIBRARY_PATH_DIRECTORY "C:/Users/boje/Desktop/helperz/cpp/deps/freetype-2.13.2/build")
+
+    # target_link_directories(${PROJECT_NAME} WIN32 PRIVATE
+    target_link_directories(${PROJECT_NAME} PRIVATE
+        ${GLEW_LIBRARY_PATH_DIRECTORY}        # Path to the directory containing GLEW library file
+        ${GLFW_LIBRARY_PATH_DIRECTORY}        # Path to the directory containing GLFW library file
+        ${FT_LIBRARY_PATH_DIRECTORY}          # Path to the directory containing FreeType library file
+        ${LZMA_LIBRARY_PATH_DIRECTORY}        # Path to the directory containing LZMA library file
+    )
+
+    # there is a problem with statically linking stdlibc++ and libgcc on mingw with c++23
+    target_link_options(${PROJECT_NAME} PRIVATE -static-libstdc++ -static-libgcc -static C:/MinGW/x86_64-w64-mingw32/lib/libwinpthread.a)
+
+    target_link_libraries(${PROJECT_NAME}  glew32 opengl32  gdi32 user32 kernel32 glfw3  freetype elzip lzma)
+
+# If the operating system is not recognized
+else()
+    message(FATAL_ERROR "Unsupported operating system: ${CMAKE_SYSTEM_NAME}")
+endif()
