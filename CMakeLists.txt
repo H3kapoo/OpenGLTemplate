@@ -11,10 +11,16 @@ if(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
 
     set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/../debug) 
 
-    set(FT_INCLUDE_PATH_DIRECTORY "/usr/local/include/freetype2/")
-
-    include_directories (${FT_INCLUDE_PATH_DIRECTORY})
-
+    set(FT_LIBRARY_INCLUDE_DIRECTORY "/home/hekapoo/Downloads/freeType2/freetype-2.13.1/include/")
+    set(LZMA_LIBRARY_INCLUDE_DIRECTORY "/home/hekapoo/Downloads/xz-5.4.5/src/liblzma/")
+    set(GLEW_LIBRARY_INCLUDE_DIRECTORY "/home/hekapoo/Downloads/glew-2.1.0/include")
+    set(GLFW_LIBRARY_INCLUDE_DIRECTORY "/home/hekapoo/Downloads/glfw-3.3.8/include")
+    
+    include_directories (${FT_LIBRARY_INCLUDE_DIRECTORY})
+    include_directories (${LZMA_LIBRARY_INCLUDE_DIRECTORY})
+    include_directories (${GLEW_LIBRARY_INCLUDE_DIRECTORY})
+    include_directories (${GLFW_LIBRARY_INCLUDE_DIRECTORY})
+    
     add_executable(${PROJECT_NAME}
         main.cpp
         src/Application.cpp
@@ -34,7 +40,22 @@ if(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
     add_subdirectory(src/textHelpers)
     add_subdirectory(src/vendor)
 
-    target_link_libraries(${PROJECT_NAME} glfw GLEW GL X11 pthread Xrandr dl freetype elzip lzma)
+    set(FT_LIBRARY_PATH_DIRECTORY "/home/hekapoo/Downloads/freeType2/freetype-2.13.1/objs/.libs")
+    set(LZMA_LIBRARY_PATH_DIRECTORY "/home/hekapoo/Downloads/xz-5.4.5/src/liblzma/.libs")
+    set(GLEW_LIBRARY_PATH_DIRECTORY "/home/hekapoo/Downloads/glew-2.1.0/lib")
+    set(GLFW_LIBRARY_PATH_DIRECTORY "/home/hekapoo/Downloads/glfw-3.3.8/src")
+
+    
+    target_link_directories(${PROJECT_NAME} PRIVATE
+        ${GLEW_LIBRARY_PATH_DIRECTORY}        # Path to the directory containing GLEW library file
+        ${GLFW_LIBRARY_PATH_DIRECTORY}        # Path to the directory containing GLFW library file
+        ${FT_LIBRARY_PATH_DIRECTORY}          # Path to the directory containing FreeType library file
+        ${LZMA_LIBRARY_PATH_DIRECTORY}        # Path to the directory containing LZMA library file
+    )
+
+    target_link_options(${PROJECT_NAME} PRIVATE -static-libstdc++ -static-libgcc)
+
+    target_link_libraries(${PROJECT_NAME} glfw3 GLEW GL X11 pthread Xrandr dl png16 freetype elzip lzma)
 
 elseif(${CMAKE_SYSTEM_NAME} MATCHES "Windows")
     # Windows-specific code or configuration here
@@ -51,7 +72,8 @@ elseif(${CMAKE_SYSTEM_NAME} MATCHES "Windows")
     include_directories ("C:/Users/boje/Desktop/helperz/cpp/deps/freetype-2.13.2/include")
     include_directories ("C:/Users/boje/Desktop/helperz/cpp/deps/g-truc-glm-b71a83")
 
-    add_executable(${PROJECT_NAME}
+    add_executable(${PROJECT_NAME} WIN32
+    # add_executable(${PROJECT_NAME}
         main.cpp
         src/Application.cpp
         src/Unzipper.cpp
@@ -75,7 +97,6 @@ elseif(${CMAKE_SYSTEM_NAME} MATCHES "Windows")
     set(LZMA_LIBRARY_PATH_DIRECTORY "C:/Users/boje/Desktop/helperz/cpp/deps/lzma/bin_x86-64")
     set(FT_LIBRARY_PATH_DIRECTORY "C:/Users/boje/Desktop/helperz/cpp/deps/freetype-2.13.2/build")
 
-    # target_link_directories(${PROJECT_NAME} WIN32 PRIVATE
     target_link_directories(${PROJECT_NAME} PRIVATE
         ${GLEW_LIBRARY_PATH_DIRECTORY}        # Path to the directory containing GLEW library file
         ${GLFW_LIBRARY_PATH_DIRECTORY}        # Path to the directory containing GLFW library file
